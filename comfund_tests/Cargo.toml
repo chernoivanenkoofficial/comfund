@@ -1,0 +1,25 @@
+[package]
+name = "comfund_tests"
+version = "0.1.0"
+edition = "2021"
+
+
+
+[dependencies]
+comfund_macro_impl = { path = "../comfund_macro_impl" }
+comfund = { path = "../comfund", features = ["json", "http2"]}
+rstest = "0.24.0"
+syn = "2.0.98"
+quote = "1.0.38"
+proc-macro2 = "1.0.93"
+
+
+
+[features]
+default = ["reqwest", "axum", "actix-web"]
+
+# comfund-genereted features
+reqwest = ["comfund/reqwest"]
+axum = ["comfund/axum"]
+actix-web = ["comfund/actix-web"]
+static = []

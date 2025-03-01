@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = [
+    "comfund_macros",
+    "comfund_macro_impl",
+    "comfund_tests",
+    "comfund",
+    "comfund_paths",
+]
+
+[workspace.dependencies]
+serde = { version = "1.0.218", features = ["derive"] }

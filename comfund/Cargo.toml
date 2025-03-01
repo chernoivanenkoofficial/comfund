@@ -1,0 +1,45 @@
+[package]
+name = "comfund"
+version = "0.1.0"
+edition = "2021"
+authors = ["Chernoivanenko Serhii <chernoivanenkoofficial@gmail.com>"]
+keywords = ["contract", "service", "http", "client", "web"]
+categories = [
+    "development-tools",
+    "asynchronous",
+    "network-programming",
+    "web-programming::http-server",
+    "web-programming::http-client",
+    "wasm",
+]
+description = "A WCF-like framework for defining service contracts."
+documentation = "https://docs.rs/comfund"
+license = "MIT or Apache-2.0"
+readme = "README.md"
+
+
+[dependencies]
+comfund_macros = { path = "../comfund_macros" }
+paths = { package = "comfund_paths", path = "../comfund_paths", optional = true }
+serde = { workspace = true }
+reqwest = { version = "0.12.12", optional = true, features = [
+    "default-tls",
+    "charset",
+] }
+actix-web = { version = "4.9.0", optional = true }
+axum = { version = "0.8.4", optional = true, features = [
+    "query",
+    "matched-path",
+    "original-uri",
+] }
+
+[features]
+default = []
+
+reqwest = ["dep:reqwest", "paths"]
+
+http1 = ["axum/http1"]
+http2 = ["reqwest/http2", "axum/http2"]
+json = ["reqwest/json", "axum/json"]
+form = ["axum/form"]
+multipart = ["reqwest/multipart", "axum/multipart"]

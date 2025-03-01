@@ -1,0 +1,24 @@
+[package]
+name = "comfund_macros"
+version = "0.1.0"
+edition = "2021"
+authors = ["Chernoivanenko Serhii <chernoivanenkoofficial@gmail.com>"]
+keywords = ["contract", "service"]
+categories = [
+    "development-tools",
+    "asynchronous",
+    "network-programming",
+    "web-programming::http-server",
+    "web-programming::http-client",
+    "wasm",
+]
+description = "A WCF-like attribute macro for defining service contracts"
+documentation = "https://docs.rs/comfund_macros"
+license = "MIT or Apache-2.0"
+readme = "README.md"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+comfund_macro_impl = { path = "../comfund_macro_impl" }

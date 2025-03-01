@@ -1,0 +1,22 @@
+[package]
+name = "comfund_paths"
+version = "0.1.0"
+edition = "2021"
+authors = ["Chernoivanenko Serhii <chernoivanenkoofficial@gmail.com>"]
+keywords = ["contract", "http", "client","serde", "url"]
+categories = [
+    "network-programming",
+    "parsing"
+]
+description = "Parser for url path templates and serializer of dynamic URL paths, used by `comfund` crate"
+license = "MIT or Apache-2.0"
+readme = "README.md"
+documentation = "https://docs.rs/comfund_paths"
+
+[dependencies]
+serde = { workspace = true, optional = true }
+percent-encoding = "2.3.1"
+
+[features]
+default = ["serde"]
+
