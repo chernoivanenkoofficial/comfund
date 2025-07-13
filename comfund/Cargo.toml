@@ -14,7 +14,7 @@ categories = [
 ]
 description = "A WCF-like framework for defining service contracts."
 documentation = "https://docs.rs/comfund"
-license = "MIT or Apache-2.0"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 
 

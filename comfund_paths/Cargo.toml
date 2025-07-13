@@ -9,7 +9,7 @@ categories = [
     "parsing"
 ]
 description = "Parser for url path templates and serializer of dynamic URL paths, used by `comfund` crate"
-license = "MIT or Apache-2.0"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 documentation = "https://docs.rs/comfund_paths"
 
