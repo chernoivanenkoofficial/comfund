@@ -59,7 +59,6 @@ pub type Result<T> = std::result::Result<T, ClientError>;
 #[macro_export]
 macro_rules! reexport {
     ($($comfund_crate:ident)::*) => {
-        #[cfg(feature = "serde")]
         pub use $($comfund_crate)::*::serde;
 
         #[cfg(feature = "reqwest")]
