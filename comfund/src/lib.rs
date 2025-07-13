@@ -34,6 +34,7 @@ pub use axum;
 mod reqwest_exports {
     pub use reqwest;
 
+    #[derive(Debug)]
     pub enum ClientError {
         PathSerializerError(paths::path_serializer::Error),
         Reqwest(reqwest::Error),

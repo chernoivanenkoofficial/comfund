@@ -27,6 +27,7 @@ const FRAGMENTS: &AsciiSet = &NON_ALPHANUMERIC.remove(b'-').remove(b'_');
 /// should have nested fields annotated with
 /// [`#[serde(flatten)]`](https://serde.rs/attr-flatten.html) attribute recursively
 /// (or have corresponding by-hand implementation for serializing nested fields).
+#[derive(Debug, Clone, PartialEq)]
 pub struct PathSerializer<'s, 't> {
     template: &'t PathTemplate<'s>,
     values: Vec<Option<String>>,
