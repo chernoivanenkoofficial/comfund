@@ -59,19 +59,6 @@ actix-web = ["comfund/actix-web"]
 static = []
 ```
 
-Also, comfund reexports any backend or frontend enabled for better version synchronization, both in the `confund` itself and in the generated code, so its advised to access any of the said through the api defining crate.
-
-```rust
-// High risk of version conflicts/errors
-use reqwest::*;
-// Better import like this
-use api_crate::reqwest::*;
-```
-
-This means, that for some derive macros to work (like `serde` macros) you need to specify a new location of crate (e.g. `#[serde(crate = comfund::serde)]`)
-
-To allow for multiple API's to be declared in the single crate, `comfund::reexport!()` convinience macro is provided instead of generating these reexports through `#[contract]` attribute macro.
-
 ## Contracts
 
 Contract is basically an annotated Rust `trait` with functions defined for each endpoint (in the basic case).

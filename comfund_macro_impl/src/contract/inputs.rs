@@ -94,15 +94,11 @@ pub fn from_params(ep_name: &syn::Ident, params: Vec<Param>, suffix: &str) -> Op
         let definition = quote! {
             #[cfg_attr(
                 any(feature = "reqwest"),
-                derive(::comfund::serde::Serialize)
+                derive(::serde::Serialize)
             )]
             #[cfg_attr(
                 any(feature = "actix-web", feature = "axum"),
-                derive(::comfund::serde::Deserialize)
-            )]
-            #[cfg_attr(
-                any(feature = "reqwest", feature = "axum", feature = "actix-web"),
-                serde(crate = "::comfund::serde")
+                derive(::serde::Deserialize)
             )]
             pub struct #ty {
                 #(#fields),*

@@ -16,7 +16,6 @@
 //! And only one place in code should be modified manually, if needed.
 
 pub use comfund_macros::contract;
-pub use serde;
 
 #[cfg(any(feature = "reqwest"))]
 pub use paths;
@@ -24,16 +23,8 @@ pub use paths;
 #[cfg(feature = "reqwest")]
 pub use reqwest_exports::*;
 
-#[cfg(feature = "actix-web")]
-pub use actix_web;
-
-#[cfg(feature = "axum")]
-pub use axum;
-
 #[cfg(feature = "reqwest")]
 mod reqwest_exports {
-    pub use reqwest;
-
     #[derive(Debug)]
     pub enum ClientError {
         PathSerializerError(paths::path_serializer::Error),
@@ -55,22 +46,3 @@ mod reqwest_exports {
 
 #[cfg(feature = "reqwest")]
 pub type Result<T> = std::result::Result<T, ClientError>;
-
-#[macro_export]
-macro_rules! reexport {
-    ($($comfund_crate:ident)::*) => {
-        pub use $($comfund_crate)::*::serde;
-
-        #[cfg(feature = "reqwest")]
-        pub use $($comfund_crate)::*::reqwest;
-
-        #[cfg(feature = "actix-web")]
-        pub use $($comfund_crate)::*::actix_web;
-
-        #[cfg(feature = "axum")]
-        pub use $($comfund_crate)::*::axum;
-    };
-    () => {
-        reexport!(comfund)
-    }
-}

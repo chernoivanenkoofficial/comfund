@@ -1,6 +1,6 @@
 [package]
 name = "comfund"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["Chernoivanenko Serhii <chernoivanenkoofficial@gmail.com>"]
 keywords = ["contract", "service", "http", "client", "web"]
@@ -22,24 +22,9 @@ readme = "README.md"
 [dependencies]
 comfund_macros = { path = "../comfund_macros", version = "0.1.0" }
 paths = { package = "comfund_paths", path = "../comfund_paths", version = "0.1.0", optional = true }
-serde = { workspace = true }
-reqwest = { version = "0.12.12", optional = true, features = [
-    "default-tls",
-    "charset",
-    "http2",
-    "json",
-    "multipart"
-] }
-actix-web = { version = "4.9.0", optional = true }
-axum = { version = "0.8.4", optional = true, features = [
-    "query",
-    "matched-path",
-    "original-uri",
-    "multipart",
-    "form"
-] }
+reqwest = { version = "0.12.22", optional = true, features = [] }
 
 [features]
-default = []
-
 reqwest = ["dep:reqwest", "paths"]
+actix-web = []
+axum = []

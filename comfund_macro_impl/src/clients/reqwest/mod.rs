@@ -158,11 +158,11 @@ fn sig(ep: &Endpoint, with_reciever: bool) -> impl ToTokens {
 
 fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     let method: syn::Path = match ep.meta.method() {
-        Method::Get => parse_quote!(::comfund::reqwest::Method::GET),
-        Method::Post => parse_quote!(::comfund::reqwest::Method::POST),
-        Method::Delete => parse_quote!(::comfund::reqwest::Method::DELETE),
-        Method::Put => parse_quote!(::comfund::reqwest::Method::PUT),
-        Method::Patch => parse_quote!(::comfund::request::Method::PATCH),
+        Method::Get => parse_quote!(::reqwest::Method::GET),
+        Method::Post => parse_quote!(::reqwest::Method::POST),
+        Method::Delete => parse_quote!(::reqwest::Method::DELETE),
+        Method::Put => parse_quote!(::reqwest::Method::PUT),
+        Method::Patch => parse_quote!(::request::Method::PATCH),
     };
 
     let path_params = path_expr(root, ep);
@@ -175,7 +175,7 @@ fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     };
 
     quote! {
-        ::comfund::reqwest::Client::builder()
+        ::reqwest::Client::builder()
             .build()
             .map_err(::comfund::ClientError::Reqwest)?
             .request(#method, #path_params)

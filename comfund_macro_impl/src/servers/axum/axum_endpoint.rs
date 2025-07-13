@@ -76,7 +76,7 @@ impl<'e> AxumEndpoint<'e> {
         let decorator_id = self.decorator_id();
 
         quote! {
-            ::comfund::axum::routing::#method(
+            ::axum::routing::#method(
                 #service_trait_var::#decorator_id(
                     #service_trait_var::#handler_id
                 )
@@ -87,7 +87,7 @@ impl<'e> AxumEndpoint<'e> {
 
 fn def_ext_type(ext_type_name: &syn::Ident) -> impl quote::ToTokens {
     quote! {
-        type #ext_type_name: ::comfund::axum::extract::FromRequestParts<Self::State> + Send;
+        type #ext_type_name: ::axum::extract::FromRequestParts<Self::State> + Send;
     }
 }
 
@@ -99,7 +99,7 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
             .clone()
             .unwrap_or_else(|| syn::Ident::new("path_inputs", aep.handler_id().span()));
 
-        quote!(#id: ::comfund::axum::extract::Path<#ty>,)
+        quote!(#id: ::axum::extract::Path<#ty>,)
     });
 
     let query_inputs_param = aep.ep.query_inputs.as_ref().map(|inputs| {
@@ -109,7 +109,7 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
             .clone()
             .unwrap_or_else(|| syn::Ident::new("query_inputs", aep.handler_id().span()));
 
-        quote!(#id: ::comfund::axum::extract::Query<#ty>,)
+        quote!(#id: ::axum::extract::Query<#ty>,)
     });
 
     let ext_param = quote! { extensions: Self::#ext_type_name ,};
@@ -127,7 +127,7 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
 
         match aep.ep.meta.options().content_type {
             // TODO: Response types mapping when defined common supported returned content types
-            ContentType::ApplicationJson => parse_quote!(::comfund::axum::Json<#ret_ty>),
+            ContentType::ApplicationJson => parse_quote!(::axum::Json<#ret_ty>),
             _ => ret_ty,
         }
     };
@@ -145,11 +145,11 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
 fn def_decorator(aep: &AxumEndpoint) -> impl quote::ToTokens {
     let path_ty = aep.ep.path_inputs.as_ref().map(|inputs| {
         let ty = &inputs.ty;
-        quote!(,::comfund::axum::extract::Path<#ty>)
+        quote!(,::axum::extract::Path<#ty>)
     });
     let query_ty = aep.ep.query_inputs.as_ref().map(|inputs| {
         let ty = &inputs.ty;
-        quote!(,::comfund::axum::extract::Query<#ty>)
+        quote!(,::axum::extract::Query<#ty>)
     });
     let ext_ty = aep.ext_type_name();
     let body_ty = aep.ep.body_param.as_ref().map(|param| {
@@ -159,7 +159,7 @@ fn def_decorator(aep: &AxumEndpoint) -> impl quote::ToTokens {
     let decorator_id = aep.decorator_id();
 
     let handler_constraint = quote! {
-        impl ::comfund::axum::handler::Handler<(
+        impl ::axum::handler::Handler<(
             M
             #path_ty
             #query_ty
@@ -181,8 +181,8 @@ fn get_body_param_ty(param: &Param) -> syn::Type {
     let ty = &param.ty;
 
     match param.meta.transport() {
-        Transport::Json => parse_quote!(::comfund::axum::extract::Json<#ty>),
-        Transport::Multipart => parse_quote!(::comfund::axum::extract::Multipart<#ty>),
+        Transport::Json => parse_quote!(::axum::extract::Json<#ty>),
+        Transport::Multipart => parse_quote!(::axum::extract::Multipart<#ty>),
         _ => unreachable!(),
     }
 }

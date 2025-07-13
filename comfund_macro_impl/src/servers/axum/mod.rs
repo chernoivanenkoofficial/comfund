@@ -49,8 +49,8 @@ fn impl_route_function(contract: &Contract) -> impl quote::ToTokens {
     let routing_expressions = get_routing_expressions(contract, &service_trait_var);
 
     quote! {
-        pub fn #route_fn_id<#service_trait_var: #contract_trait_id>(state: #service_trait_var::State) -> ::comfund::axum::Router<#service_trait_var::State> {
-            ::comfund::axum::Router::new()
+        pub fn #route_fn_id<#service_trait_var: #contract_trait_id>(state: #service_trait_var::State) -> ::axum::Router<#service_trait_var::State> {
+            ::axum::Router::new()
                 #(#routing_expressions)*
                 .with_state(state)
         }
