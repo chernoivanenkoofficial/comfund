@@ -10,7 +10,6 @@ categories = [
     "network-programming",
     "web-programming::http-server",
     "web-programming::http-client",
-    "wasm",
 ]
 description = "A WCF-like framework for defining service contracts."
 documentation = "https://docs.rs/comfund"
