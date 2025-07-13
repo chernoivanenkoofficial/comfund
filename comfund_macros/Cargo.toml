@@ -23,4 +23,4 @@ homepage = "https://github.com/chernoivanenkoofficial/comfund"
 proc-macro = true
 
 [dependencies]
-comfund_macro_impl = { path = "../comfund_macro_impl" }
+comfund_macro_impl = { path = "../comfund_macro_impl", version = "0.1.0" }

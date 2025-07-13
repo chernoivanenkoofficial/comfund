@@ -14,7 +14,7 @@ repository = "https://github.com/chernoivanenkoofficial/comfund"
 homepage = "https://github.com/chernoivanenkoofficial/comfund"
 
 [dependencies]
-comfund_paths = { path = "../comfund_paths", features = []}
+comfund_paths = { path = "../comfund_paths", version = "0.1.0", features = [] }
 deluxe = "0.5.0"
 deluxe-core = "0.5.0"
 proc-macro2 = "1.0.93"
