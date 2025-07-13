@@ -12,6 +12,8 @@ description = "Parser for url path templates and serializer of dynamic URL paths
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 documentation = "https://docs.rs/comfund_paths"
+repository = "https://github.com/chernoivanenkoofficial/comfund"
+homepage = "https://github.com/chernoivanenkoofficial/comfund"
 
 [dependencies]
 serde = { workspace = true, optional = true }

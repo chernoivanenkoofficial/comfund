@@ -10,6 +10,8 @@ categories = [
 description = "Implementation of `comfund` macros."
 license = "MIT OR Apache-2.0"
 readme = "README.md"
+repository = "https://github.com/chernoivanenkoofficial/comfund"
+homepage = "https://github.com/chernoivanenkoofficial/comfund"
 
 [dependencies]
 comfund_paths = { path = "../comfund_paths", features = []}

@@ -16,6 +16,8 @@ description = "A WCF-like attribute macro for defining service contracts"
 documentation = "https://docs.rs/comfund_macros"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
+repository = "https://github.com/chernoivanenkoofficial/comfund"
+homepage = "https://github.com/chernoivanenkoofficial/comfund"
 
 [lib]
 proc-macro = true
