@@ -1,5 +1,5 @@
 use quote::{format_ident, quote};
-use syn::parse_quote;
+use syn::{parse_quote, token};
 
 use crate::contract::{
     content_type::ContentType, endpoint::Endpoint, method::Method, param::Param,
@@ -86,39 +86,53 @@ impl<'e> AxumEndpoint<'e> {
 }
 
 fn def_ext_type(ext_type_name: &syn::Ident) -> impl quote::ToTokens {
-    quote! {
-        type #ext_type_name: ::axum::extract::FromRequestParts<Self::State> + Send;
+    syn::TraitItemType {
+        attrs: Vec::new(),
+        bounds: parse_quote!(::axum::extract::FromRequestParts<Self::State> + Send),
+        type_token: parse_quote!(type),
+        generics: parse_quote!(),
+        ident: ext_type_name.clone(),
+        colon_token: parse_quote!(:),
+        default: None,
+        semi_token: parse_quote!(;)
     }
 }
 
 fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::ToTokens {
-    let path_inputs_param = aep.ep.path_inputs.as_ref().map(|inputs| {
+    use syn::punctuated::Punctuated;
+
+    let mut fn_args: Punctuated<syn::FnArg, syn::Token![,]> = Punctuated::new();
+
+    aep.ep.path_inputs.as_ref().inspect(|&inputs| {
         let ty = &inputs.ty;
         let id = inputs
             .id
             .clone()
             .unwrap_or_else(|| syn::Ident::new("path_inputs", aep.handler_id().span()));
 
-        quote!(#id: ::axum::extract::Path<#ty>,)
+        fn_args.push(parse_quote!(#id: ::axum::extract::Path<#ty>));
     });
 
-    let query_inputs_param = aep.ep.query_inputs.as_ref().map(|inputs| {
+    aep.ep.query_inputs.as_ref().inspect(|&inputs| {
         let ty = &inputs.ty;
         let id = inputs
             .id
             .clone()
             .unwrap_or_else(|| syn::Ident::new("query_inputs", aep.handler_id().span()));
 
-        quote!(#id: ::axum::extract::Query<#ty>,)
+        fn_args.push(parse_quote!(#id: ::axum::extract::Query<#ty>));
     });
 
-    let ext_param = quote! { extensions: Self::#ext_type_name ,};
-    let body_param = aep.ep.body_param.as_ref().map_or(quote! {}, |param| {
+    fn_args.push(parse_quote!(extensions: Self::#ext_type_name));
+
+    aep.ep.body_param.as_ref().inspect(|&param| {
         let name = &param.name;
         let ty = get_body_param_ty(param);
 
-        quote! { #name: #ty }
+        fn_args.push(parse_quote!(#name: #ty));
     });
+
+    fn_args.pop_punct();
 
     let handler_id = aep.handler_id();
 
@@ -132,14 +146,11 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
         }
     };
 
-    quote! {
-        fn #handler_id(
-            #path_inputs_param
-            #query_inputs_param
-            #ext_param
-            #body_param
-        ) -> impl ::std::future::Future<Output = #ret_ty> + ::core::marker::Send;
-    }
+    let item_fn: syn::TraitItemFn = parse_quote! {
+        fn #handler_id(#fn_args) -> impl ::std::future::Future<Output = #ret_ty> + Send;
+    };
+
+    item_fn
 }
 
 fn def_decorator(aep: &AxumEndpoint) -> impl quote::ToTokens {
@@ -163,18 +174,20 @@ fn def_decorator(aep: &AxumEndpoint) -> impl quote::ToTokens {
             M
             #path_ty
             #query_ty
-            ,Self::#ext_ty
+            , Self::#ext_ty
             #body_ty
         ), Self::State>
     };
 
-    quote! {
+    let item_fn: syn::TraitItemFn = parse_quote! {
         fn #decorator_id<M>(
             handler: #handler_constraint
         ) -> #handler_constraint {
             handler
         }
-    }
+    };
+
+    item_fn
 }
 
 fn get_body_param_ty(param: &Param) -> syn::Type {

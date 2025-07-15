@@ -6,27 +6,13 @@ use definition::*;
 use implelentation::*;
 use model::*;
 
-static HOST: &str = "http://127.0.0.1:10000";
-static BIND_TARGET: &str = "127.0.0.1:10000";
-static CLIENT: ServiceClient = ServiceClient::new_const(&HOST);
-static SERVER_LOCK: tokio::sync::OnceCell<()> = tokio::sync::OnceCell::const_new();
+use crate::axum_initializators;
 
-async fn launch_server() -> std::io::Result<()> {
-    use tokio::net::TcpListener;
-
-    SERVER_LOCK
-        .get_or_init(move || async {
-            let listener = TcpListener::bind(BIND_TARGET).await.unwrap();
-            let router = route_service::<ServiceImpl>(());
-
-            tokio::spawn(async move {
-                axum::serve(listener, router).await.unwrap();
-            });
-        })
-        .await;
-
-    Ok(())
-}
+axum_initializators!(
+    "127.0.0.1:10000",
+    CLIENT = ServiceClient,
+    launch_server = route_service::<ServiceImpl>[()]
+);
 
 #[tokio::test]
 async fn hello_world() {

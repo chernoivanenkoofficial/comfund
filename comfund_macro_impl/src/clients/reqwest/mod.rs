@@ -5,7 +5,6 @@ use crate::contract::inputs::Inputs;
 use crate::contract::method::Method;
 use crate::contract::transport::Transport;
 use crate::contract::{content_type::ContentType, param::Param};
-use crate::utils::path::PathSegment;
 use crate::Contract;
 use comfund_paths::path_template::{PathTemplate, Segment};
 use quote::{format_ident, quote, ToTokens};
@@ -175,7 +174,7 @@ fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     let query_params = query_expr(ep).map(|expr| quote! { .query(&#expr)});
     let body_params = body_expr(ep);
 
-    let return_mapping = match ep.meta.options().content_type {
+    let content_mapping = match ep.meta.options().content_type {
         ContentType::ApplicationJson => quote! { .json() },
         ContentType::TextPlain => quote! { .text() },
     };
@@ -190,7 +189,7 @@ fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
             .send()
             .await
             .map_err(::comfund::ClientError::Reqwest)?
-            #return_mapping
+            #content_mapping
             .await
             .map_err(::comfund::ClientError::Reqwest)
     }
