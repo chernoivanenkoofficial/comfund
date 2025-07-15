@@ -44,7 +44,7 @@ mod client_impl {
 
         let client_struct = quote! {
             pub struct #client_ident {
-                root: String
+                root: ::std::borrow::Cow<'static, str>
             }
         };
 
@@ -56,7 +56,13 @@ mod client_impl {
             impl #client_ident {
                 pub fn new(root: &impl ::std::string::ToString) -> Self {
                     Self {
-                        root: root.to_string()
+                        root: ::std::borrow::Cow::Owned(root.to_string())
+                    }
+                }
+
+                pub const fn new_const(root: &'static str) -> Self {
+                    Self {
+                        root: ::std::borrow::Cow::Borrowed(root)
                     }
                 }
 

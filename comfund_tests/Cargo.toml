@@ -7,16 +7,19 @@ edition = "2021"
 
 [dependencies]
 comfund_macro_impl = { path = "../comfund_macro_impl" }
-comfund = { path = "../comfund", features = ["json", "http2"]}
+comfund = { path = "../comfund", features = []}
 rstest = "0.24.0"
 syn = "2.0.98"
 quote = "1.0.38"
 proc-macro2 = "1.0.93"
 
-
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+axum = { version = "0.8.4" }
+reqwest = { version = "0.12.22", features = ["default", "json"] }
 
 [features]
-default = ["reqwest", "axum", "actix-web"]
+default = ["reqwest", "axum"]
 
 # comfund-genereted features
 reqwest = ["comfund/reqwest"]
