@@ -9,6 +9,7 @@ use crate::contract::Contract;
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let service_trait_def = def_service_trait(contract);
     let route_fn_impl = impl_route_function(contract);
+    let attrs = contract.attrs.iter();
 
     quote! {
         #[cfg(all(feature = "axum", not(any(feature = "actix-web"))))]
@@ -17,6 +18,7 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
         #[cfg(feature = "axum")]
         pub mod axum {
             use super::*;
+            #(#attrs)*
             #service_trait_def
             #route_fn_impl
         }

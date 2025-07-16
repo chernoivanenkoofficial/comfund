@@ -7,6 +7,7 @@ use crate::{contract::Contract, servers::actix_web::actix_endpoint::ActixEndpoin
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let service_trait_def = def_service_trait(contract);
     let configure_fn_impl = impl_configure_fn(contract);
+    let attrs = contract.attrs.iter();
 
     quote! {
         #[cfg(
@@ -22,6 +23,7 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
         #[cfg(feature = "actix-web")]
         pub mod actix_web {
             use super::*;
+            #(#attrs)*
             #service_trait_def
             #configure_fn_impl
         }
