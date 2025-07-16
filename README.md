@@ -197,6 +197,7 @@ The rule of the thumb here would be ***if i were to write such a set of endpoint
 **Backends**
 
 - [`axum`](https://docs.rs/axum/latest/axum/)
+- [`actix-web`](https://actix.rs/docs/)
 
 ### Service and Handler-Local state
 
@@ -205,8 +206,8 @@ COMING SOON
 ### Milestones
 
 - [x] MVP
+- [x] `actix-web` support
 - [ ] Authentication
-- [ ] `actix-web` support
 - [ ] Generation/forwardin fo doc comments.
 - [ ] Contract defaults
 - [ ] Reserved keywords tracking
