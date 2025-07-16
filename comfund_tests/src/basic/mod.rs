@@ -2,7 +2,6 @@ mod definition;
 mod implelentation;
 mod model;
 
-use definition::*;
 use implelentation::*;
 use model::*;
 
@@ -10,8 +9,8 @@ use crate::axum_initializators;
 
 axum_initializators!(
     "127.0.0.1:10000",
-    CLIENT = ServiceClient,
-    launch_server = route_service::<ServiceImpl>[()]
+    CLIENT = definition::reqwest::ServiceClient,
+    launch_server = definition::axum::route_service::<ServiceImpl>[()]
 );
 
 #[tokio::test]
@@ -23,7 +22,8 @@ async fn hello_world() {
 #[tokio::test]
 async fn add_two() {
     launch_server().await.unwrap();
-    CLIENT.add_two(10, 20).await.unwrap();
+
+    assert_eq!(CLIENT.add_two(10, 20).await.unwrap(), 30);
 }
 
 #[tokio::test]
