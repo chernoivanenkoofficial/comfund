@@ -9,6 +9,7 @@ pub fn implement(contract: &Contract) -> TokenStream {
     let mut stream = TokenStream::new();
 
     stream.extend(axum::implement(contract));
+    stream.extend(actix_web::implement(contract));
 
     stream
 }

@@ -2,20 +2,20 @@ mod axum_endpoint;
 
 use quote::{format_ident, quote, ToTokens};
 
-use crate::{
-    contract::{inputs, Contract},
-    servers::axum::axum_endpoint::AxumEndpoint,
-};
+use crate::servers::axum::axum_endpoint::AxumEndpoint;
+use crate::contract::Contract;
+
 
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let service_trait_def = def_service_trait(contract);
     let route_fn_impl = impl_route_function(contract);
 
     quote! {
+        #[cfg(all(feature = "axum", not(any(feature = "actix-web"))))]
+        pub use axum::*;
+
         #[cfg(feature = "axum")]
-        pub use axum_impl::*;
-        #[cfg(feature = "axum")]
-        mod axum_impl {
+        pub mod axum {
             use super::*;
             #service_trait_def
             #route_fn_impl
@@ -43,13 +43,13 @@ fn def_service_trait(contract: &Contract) -> impl quote::ToTokens {
 }
 
 fn impl_route_function(contract: &Contract) -> impl quote::ToTokens {
+    let contract_id = &contract.id;
     let route_fn_id = get_route_fn_id(&contract.id);
-    let contract_trait_id = &contract.id;
     let service_trait_var = format_ident!("C");
     let routing_expressions = get_routing_expressions(contract, &service_trait_var);
 
     quote! {
-        pub fn #route_fn_id<#service_trait_var: #contract_trait_id>(state: #service_trait_var::State) -> ::axum::Router<#service_trait_var::State> {
+        pub fn #route_fn_id<#service_trait_var: #contract_id>(state: #service_trait_var::State) -> ::axum::Router<#service_trait_var::State> {
             ::axum::Router::new()
                 #(#routing_expressions)*
                 .with_state(state)

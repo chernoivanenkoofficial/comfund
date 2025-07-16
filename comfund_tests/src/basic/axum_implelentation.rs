@@ -1,9 +1,10 @@
-use super::definition::*;
 use super::model::*;
+
+use super::definition::*;
 
 pub struct ServiceImpl;
 
-impl Service for ServiceImpl {
+impl axum::Service for ServiceImpl {
     type State = ();  
 
     type HelloWorldExtensions = ();
@@ -13,17 +14,17 @@ impl Service for ServiceImpl {
 
     type AddTwoExtensions = ();
     async fn add_two(
-        _path_inputs: axum::extract::Path<AddTwoPathInputs>,
+        path_inputs: ::axum::extract::Path<AddTwoPathInputs>,
         _extensions: Self::AddTwoExtensions,
-    ) -> axum::Json<()> {
-        axum::Json(())
+    ) -> ::axum::Json<u32> {
+        ::axum::Json(path_inputs.a + path_inputs.b)
     }
 
     type AddThreeExtensions = ();
     async fn add_three(
-        _path_inputs: axum::extract::Path<AddThreePathInputs>,
+        _path_inputs: ::axum::extract::Path<AddThreePathInputs>,
         _extensions: Self::AddThreeExtensions,
-    ) -> axum::Json<()> {
-        axum::Json(())
+    ) -> ::axum::Json<()> {
+        ::axum::Json(())
     }
 }

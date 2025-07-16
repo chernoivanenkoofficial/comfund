@@ -14,23 +14,32 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let client_impl = client_impl::implement(contract);
     let static_impl = static_impl::implement(contract);
 
+    // TODO: Add "not any other feature" clause to conditional reexport,
+    // when other client backends become supported
     quote! {
-        #[cfg(all(feature = "reqwest", not(feature = "static")))]
-        pub use client_impl::*;
+        #[cfg(all(feature = "reqwest"))]
+        pub use reqwest::*;
 
-        #[cfg(all(feature = "reqwest", not(feature = "static")))]
-        mod client_impl {
+        pub mod reqwest {
             use super::*;
-            #client_impl
-        }
 
-        #[cfg(all(feature = "reqwest", feature = "static"))]
-        pub use static_impl::*;
+            #[cfg(all(feature = "reqwest", not(feature = "static")))]
+            pub use client_impl::*;
 
-        #[cfg(all(feature = "reqwest", feature = "static"))]
-        mod static_impl {
-            use super::*;
-            #static_impl
+            #[cfg(all(feature = "reqwest", not(feature = "static")))]
+            mod client_impl {
+                use super::*;
+                #client_impl
+            }
+
+            #[cfg(all(feature = "reqwest", feature = "static"))]
+            pub use static_impl::*;
+
+            #[cfg(all(feature = "reqwest", feature = "static"))]
+            mod static_impl {
+                use super::*;
+                #static_impl
+            }
         }
     }
 }
