@@ -37,6 +37,7 @@ pub struct Contract {
     pub id: syn::Ident,
     pub endpoints: Vec<Endpoint>,
     pub meta: ServiceMeta,
+    pub attrs: Vec<syn::Attribute>
 }
 
 #[derive(Debug, Clone, deluxe::ParseMetaItem)]
@@ -52,6 +53,7 @@ impl Contract {
         let mut errors = None;
 
         let id = item_trait.ident;
+        let attrs = item_trait.attrs;
         let fn_items = get_fn_items(item_trait.items, &mut errors);
         let endpoints = fn_items
             .into_iter()
@@ -65,6 +67,7 @@ impl Contract {
                 id,
                 endpoints,
                 meta,
+                attrs
             })
         }
     }

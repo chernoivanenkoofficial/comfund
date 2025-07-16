@@ -49,8 +49,10 @@ mod client_impl {
 
     pub fn implement(contract: &Contract) -> impl ToTokens {
         let client_ident = format_ident!("{}Client", &contract.id);
+        let attrs = contract.attrs.iter();
 
         let client_struct = quote! {
+            #(#attrs)*
             pub struct #client_ident {
                 root: ::std::borrow::Cow<'static, str>
             }
@@ -82,8 +84,10 @@ mod client_impl {
     fn impl_endpoint(ep: &Endpoint) -> impl ToTokens {
         let sig = sig(ep, true);
         let body = impl_body(parse_quote! { self.root.clone() }, ep);
+        let attrs = ep.attrs.iter();
 
         quote! {
+            #(#attrs)*
             #sig {
                 #body
             }
@@ -114,8 +118,10 @@ mod static_impl {
         let sig = sig(ep, false);
         // TODO: Default root resolver
         let body = impl_body(parse_quote!(#root_cell_id.get().unwrap()), ep);
+        let attrs = ep.attrs.iter();
 
         quote! {
+            #(#attrs)*
             #sig {
                 #body
             }
