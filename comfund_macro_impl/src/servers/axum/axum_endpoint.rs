@@ -1,10 +1,11 @@
 use quote::{format_ident, quote};
-use syn::{parse_quote, token};
+use syn::{parse_quote, parse_quote_spanned, token};
 
-use crate::contract::{
-    content_type::ContentType, endpoint::Endpoint, method::Method, param::Param,
-    transport::Transport,
-};
+use crate::contract::transport::Transport;
+use crate::contract::param::Param;
+use crate::contract::method::Method;
+use crate::contract::endpoint::Endpoint;
+use crate::contract::content_type::ContentType;
 
 pub struct AxumEndpoint<'e> {
     ep: &'e Endpoint,
@@ -86,16 +87,12 @@ impl<'e> AxumEndpoint<'e> {
 }
 
 fn def_ext_type(ext_type_name: &syn::Ident) -> impl quote::ToTokens {
-    syn::TraitItemType {
-        attrs: Vec::new(),
-        bounds: parse_quote!(::axum::extract::FromRequestParts<Self::State> + Send),
-        type_token: parse_quote!(type),
-        generics: parse_quote!(),
-        ident: ext_type_name.clone(),
-        colon_token: parse_quote!(:),
-        default: None,
-        semi_token: parse_quote!(;)
-    }
+    let item_type:syn::TraitItemType  = parse_quote_spanned! {
+        ext_type_name.span()=>
+        type #ext_type_name: ::axum::extract::FromRequestParts<Self::State> + ::std::marker::Send;
+    };
+
+    item_type
 }
 
 fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::ToTokens {

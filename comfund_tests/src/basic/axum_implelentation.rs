@@ -1,11 +1,10 @@
 use super::model::*;
 
-use super::definition::axum::*;
 use super::definition::*;
 
 pub struct ServiceImpl;
 
-impl Service for ServiceImpl {
+impl axum::Service for ServiceImpl {
     type State = ();  
 
     type HelloWorldExtensions = ();
