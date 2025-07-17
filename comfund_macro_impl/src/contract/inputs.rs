@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use quote::quote;
+use quote::{quote, quote_spanned};
 use syn::parse_quote;
 
 use crate::contract::endpoint::Endpoint;
@@ -75,7 +75,8 @@ pub fn from_params(ep_name: &syn::Ident, params: Vec<Param>, suffix: &str) -> Op
             let name = &param.name;
             let ty = &param.ty;
             let flatten = if param.meta.options().flatten.is_set() {
-                Some(quote! {
+                Some(quote_spanned! {
+                    ep_name.span()=>
                     #[cfg_attr(
                         any(feature = "reqwest", feature = "actix-web", feature = "axum"),
                         serde(flatten)
@@ -91,7 +92,8 @@ pub fn from_params(ep_name: &syn::Ident, params: Vec<Param>, suffix: &str) -> Op
             }
         });
 
-        let definition = quote! {
+        let definition = quote_spanned! {
+            ep_name.span()=>
             #[cfg_attr(
                 any(feature = "reqwest"),
                 derive(::serde::Serialize)
