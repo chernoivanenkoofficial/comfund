@@ -2,9 +2,8 @@ mod axum_endpoint;
 
 use quote::{format_ident, quote, ToTokens};
 
-use crate::servers::axum::axum_endpoint::AxumEndpoint;
 use crate::contract::Contract;
-
+use crate::servers::axum::axum_endpoint::AxumEndpoint;
 
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let service_trait_def = def_service_trait(contract);

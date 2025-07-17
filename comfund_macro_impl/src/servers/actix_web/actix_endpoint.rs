@@ -1,11 +1,11 @@
 use quote::quote;
 use syn::{parse_quote, parse_quote_spanned};
 
-use crate::contract::endpoint::Endpoint;
-use crate::contract::transport::Transport;
-use crate::contract::param::Param;
-use crate::contract::method::Method;
 use crate::contract::content_type::ContentType;
+use crate::contract::endpoint::Endpoint;
+use crate::contract::method::Method;
+use crate::contract::param::Param;
+use crate::contract::transport::Transport;
 
 pub struct ActixEndpoint<'e> {
     ep: &'e Endpoint,
@@ -16,7 +16,7 @@ pub struct ActixEndpoint<'e> {
 impl<'e> ActixEndpoint<'e> {
     pub fn new(ep: &'e Endpoint) -> Self {
         let handler_name = ep.id.clone();
-        
+
         let ext_type_name = {
             let mut handler_str = handler_name.to_string();
             handler_str.push_str("_extensions");
@@ -29,7 +29,7 @@ impl<'e> ActixEndpoint<'e> {
         Self {
             ep,
             ext_type_name,
-            handler_name
+            handler_name,
         }
     }
 }
@@ -72,7 +72,6 @@ impl ActixEndpoint<'_> {
         quote! {
             ::actix_web::web::#method().to(#service_trait_var::#handler_id)
         }
-        
     }
 }
 
@@ -94,7 +93,10 @@ fn def_handler(aep: &ActixEndpoint, ext_type_name: &syn::Ident) -> impl quote::T
 
     aep.ep.path_inputs.as_ref().inspect(|&inputs| {
         let ty = &inputs.ty;
-        let id = inputs.id.clone().unwrap_or_else(|| syn::Ident::new("path_inputs", aep.handler_id().span()));
+        let id = inputs
+            .id
+            .clone()
+            .unwrap_or_else(|| syn::Ident::new("path_inputs", aep.handler_id().span()));
 
         fn_args.push(parse_quote_spanned! {
             handler_id.span()=>
@@ -104,7 +106,10 @@ fn def_handler(aep: &ActixEndpoint, ext_type_name: &syn::Ident) -> impl quote::T
 
     aep.ep.query_inputs.as_ref().inspect(|&inputs| {
         let ty = &inputs.ty;
-        let id = inputs.id.clone().unwrap_or_else(|| syn::Ident::new("query_inputs", aep.handler_id().span()));
+        let id = inputs
+            .id
+            .clone()
+            .unwrap_or_else(|| syn::Ident::new("query_inputs", aep.handler_id().span()));
 
         fn_args.push(parse_quote_spanned! {
             handler_id.span()=>
@@ -121,12 +126,10 @@ fn def_handler(aep: &ActixEndpoint, ext_type_name: &syn::Ident) -> impl quote::T
         let name = &param.name;
         let ty = get_body_param_ty(param);
 
-        fn_args.push(
-            parse_quote_spanned! {
-                handler_id.span()=>
-                #name: #ty
-            }
-        );
+        fn_args.push(parse_quote_spanned! {
+            handler_id.span()=>
+            #name: #ty
+        });
     });
 
     fn_args.pop_punct();
@@ -139,7 +142,7 @@ fn def_handler(aep: &ActixEndpoint, ext_type_name: &syn::Ident) -> impl quote::T
                 handler_id.span()=>
                 ::actix_web::web::Json<#ty>
             },
-            _ => ty
+            _ => ty,
         }
     };
 
@@ -151,8 +154,6 @@ fn def_handler(aep: &ActixEndpoint, ext_type_name: &syn::Ident) -> impl quote::T
     item_fn
 }
 
-
-
 fn get_body_param_ty(param: &Param) -> syn::Type {
     let ty = &param.ty;
 
@@ -162,4 +163,3 @@ fn get_body_param_ty(param: &Param) -> syn::Type {
         _ => unreachable!(),
     }
 }
-

@@ -1,11 +1,11 @@
 use quote::{format_ident, quote};
 use syn::{parse_quote, parse_quote_spanned, token};
 
-use crate::contract::transport::Transport;
-use crate::contract::param::Param;
-use crate::contract::method::Method;
-use crate::contract::endpoint::Endpoint;
 use crate::contract::content_type::ContentType;
+use crate::contract::endpoint::Endpoint;
+use crate::contract::method::Method;
+use crate::contract::param::Param;
+use crate::contract::transport::Transport;
 
 pub struct AxumEndpoint<'e> {
     ep: &'e Endpoint,
@@ -87,7 +87,7 @@ impl<'e> AxumEndpoint<'e> {
 }
 
 fn def_ext_type(ext_type_name: &syn::Ident) -> impl quote::ToTokens {
-    let item_type:syn::TraitItemType  = parse_quote_spanned! {
+    let item_type: syn::TraitItemType = parse_quote_spanned! {
         ext_type_name.span()=>
         type #ext_type_name: ::axum::extract::FromRequestParts<Self::State> + ::std::marker::Send;
     };

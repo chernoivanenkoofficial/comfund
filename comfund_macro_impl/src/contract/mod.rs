@@ -37,7 +37,7 @@ pub struct Contract {
     pub id: syn::Ident,
     pub endpoints: Vec<Endpoint>,
     pub meta: ServiceMeta,
-    pub attrs: Vec<syn::Attribute>
+    pub attrs: Vec<syn::Attribute>,
 }
 
 #[derive(Debug, Clone, deluxe::ParseMetaItem)]
@@ -81,7 +81,7 @@ impl Contract {
                 id,
                 endpoints,
                 meta,
-                attrs
+                attrs,
             })
         }
     }

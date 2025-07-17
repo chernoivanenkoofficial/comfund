@@ -16,7 +16,7 @@ const FRAGMENTS: &AsciiSet = &NON_ALPHANUMERIC.remove(b'-').remove(b'_');
 /// # Accepted serialized values
 ///
 /// * Plain values (or plain [sequences](https://serde.rs/data-model.html#:~:text=N(u8)%20%7D.-,seq,-A%20variably%20sized),
-/// if the only capture in template was wildcard capture).
+///   if the only capture in template was wildcard capture).
 /// * Tuple of plain values, with member count equal to a number of captures in template.
 /// * Maps of values.
 /// * Flat structures.  

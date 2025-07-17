@@ -1,6 +1,6 @@
-pub mod definition;
-pub mod axum_implelentation;
 pub mod actix_implementation;
+pub mod axum_implelentation;
+pub mod definition;
 pub mod model;
 
 use model::*;
@@ -16,7 +16,8 @@ axum_initializators!(
 actix_initializators!(
     "127.0.0.1:11000",
     ACTIX_CLIENT = definition::ServiceClient,
-    launch_actix_server = definition::actix_web::configure_service::<actix_implementation::ServiceImpl>[()]
+    launch_actix_server =
+        definition::actix_web::configure_service::<actix_implementation::ServiceImpl>[()]
 );
 
 #[tokio::test]

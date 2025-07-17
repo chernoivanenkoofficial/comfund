@@ -5,7 +5,7 @@ use super::definition::*;
 pub struct ServiceImpl;
 
 impl axum::Service for ServiceImpl {
-    type State = ();  
+    type State = ();
 
     type HelloWorldExtensions = ();
     async fn hello_world(_extensions: Self::HelloWorldExtensions) -> String {
