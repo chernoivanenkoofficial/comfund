@@ -1,4 +1,4 @@
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, quote_spanned};
 use syn::{parse_quote, parse_quote_spanned, token};
 
 use crate::contract::content_type::ContentType;
@@ -65,7 +65,7 @@ impl<'e> AxumEndpoint<'e> {
     }
 
     pub fn method_router(&self, service_trait_var: &syn::Ident) -> impl quote::ToTokens {
-        let method: syn::Ident = match self.ep.meta.method() {
+        let mut method: syn::Ident = match self.ep.meta.method() {
             Method::Get => parse_quote!(get),
             Method::Post => parse_quote!(post),
             Method::Delete => parse_quote!(delete),
@@ -73,10 +73,13 @@ impl<'e> AxumEndpoint<'e> {
             Method::Put => parse_quote!(put),
         };
 
+        method.set_span(self.ep.id.span());
+
         let handler_id = self.handler_id();
         let decorator_id = self.decorator_id();
 
-        quote! {
+        quote_spanned! {
+            self.ep.id.span()=>
             ::axum::routing::#method(
                 #service_trait_var::#decorator_id(
                     #service_trait_var::#handler_id
@@ -107,7 +110,10 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
             .clone()
             .unwrap_or_else(|| syn::Ident::new("path_inputs", aep.handler_id().span()));
 
-        fn_args.push(parse_quote!(#id: ::axum::extract::Path<#ty>));
+        fn_args.push(parse_quote_spanned!{
+            id.span()=>
+            #id: ::axum::extract::Path<#ty>
+        });
     });
 
     aep.ep.query_inputs.as_ref().inspect(|&inputs| {
@@ -117,10 +123,16 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
             .clone()
             .unwrap_or_else(|| syn::Ident::new("query_inputs", aep.handler_id().span()));
 
-        fn_args.push(parse_quote!(#id: ::axum::extract::Query<#ty>));
+        fn_args.push(parse_quote_spanned!{
+            id.span()=>
+            #id: ::axum::extract::Query<#ty>
+        });
     });
 
-    fn_args.push(parse_quote!(extensions: Self::#ext_type_name));
+    fn_args.push(parse_quote_spanned!{
+        aep.ep.id.span()=>
+        extensions: Self::#ext_type_name
+    });
 
     aep.ep.body_param.as_ref().inspect(|&param| {
         let name = &param.name;
@@ -143,7 +155,8 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
         }
     };
 
-    let item_fn: syn::TraitItemFn = parse_quote! {
+    let item_fn: syn::TraitItemFn = parse_quote_spanned! {
+        aep.ep.id.span()=>
         fn #handler_id(#fn_args) -> impl ::std::future::Future<Output = #ret_ty> + Send;
     };
 
@@ -166,7 +179,8 @@ fn def_decorator(aep: &AxumEndpoint) -> impl quote::ToTokens {
     });
     let decorator_id = aep.decorator_id();
 
-    let handler_constraint = quote! {
+    let handler_constraint = quote_spanned! {
+        aep.ep.id.span()=>
         impl ::axum::handler::Handler<(
             M
             #path_ty
@@ -176,7 +190,8 @@ fn def_decorator(aep: &AxumEndpoint) -> impl quote::ToTokens {
         ), Self::State>
     };
 
-    let item_fn: syn::TraitItemFn = parse_quote! {
+    let item_fn: syn::TraitItemFn = parse_quote_spanned! {
+        aep.ep.id.span()=>
         fn #decorator_id<M>(
             handler: #handler_constraint
         ) -> #handler_constraint {

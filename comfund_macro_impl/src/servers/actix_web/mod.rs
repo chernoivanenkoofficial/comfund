@@ -1,6 +1,6 @@
 mod actix_endpoint;
 
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, quote_spanned};
 
 use crate::{contract::Contract, servers::actix_web::actix_endpoint::ActixEndpoint};
 
@@ -9,7 +9,8 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let configure_fn_impl = impl_configure_fn(contract);
     let attrs = contract.attrs.iter();
 
-    quote! {
+    quote_spanned! {
+        contract.id.span()=>
         #[cfg(
             all(
                 feature = "actix-web",
@@ -53,7 +54,8 @@ fn impl_configure_fn(contract: &Contract) -> impl quote::ToTokens {
     let service_trait_var = format_ident!("C");
     let routing_expressions = get_routing_expressions(contract, &service_trait_var);
 
-    quote! {
+    quote_spanned! {
+        contract.id.span()=>
         pub fn #configure_fn_id<#service_trait_var: #contract_id>(cfg: &mut ::actix_web::web::ServiceConfig) {
             cfg #(#routing_expressions)*;
         }
@@ -61,11 +63,7 @@ fn impl_configure_fn(contract: &Contract) -> impl quote::ToTokens {
 }
 
 fn get_configure_fn_id(contract_id: &syn::Ident) -> syn::Ident {
-    let configure_fn_str = format!(
-        "configure_{}",
-        stringcase::snake_case(&contract_id.to_string())
-    );
-    syn::Ident::new(&configure_fn_str, contract_id.span())
+    format_ident!("configure_{}", stringcase::snake_case(&contract_id.to_string()), span = contract_id.span())
 }
 
 fn get_routing_expressions(
@@ -89,7 +87,8 @@ fn get_routing_expressions(
             .into_iter()
             .map(|ep| ActixEndpoint::new(ep).method_router(service_trait_var));
 
-        let expr = quote! {
+        let expr = quote_spanned! {
+            contract.id.span()=>
             .service(
                 ::actix_web::web::resource(#path)
                     #(.route(#route_expressions))*

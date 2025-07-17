@@ -126,8 +126,7 @@ fn def_handler(aep: &ActixEndpoint, ext_type_name: &syn::Ident) -> impl quote::T
         let name = &param.name;
         let ty = get_body_param_ty(param);
 
-        fn_args.push(parse_quote_spanned! {
-            handler_id.span()=>
+        fn_args.push(parse_quote! {
             #name: #ty
         });
     });
@@ -158,8 +157,14 @@ fn get_body_param_ty(param: &Param) -> syn::Type {
     let ty = &param.ty;
 
     match param.meta.transport() {
-        Transport::Json => parse_quote!(::actix_web::web::Json<#ty>),
-        Transport::Multipart => parse_quote!(::actix_multipart::form::MultipartForm<#ty>),
+        Transport::Json => parse_quote_spanned! {
+            param.name.span()=>
+            ::actix_web::web::Json<#ty>
+        },
+        Transport::Multipart => parse_quote_spanned! {
+            param.name.span()=>
+            ::actix_multipart::form::MultipartForm<#ty>
+        },
         _ => unreachable!(),
     }
 }

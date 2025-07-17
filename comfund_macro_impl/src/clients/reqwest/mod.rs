@@ -7,7 +7,7 @@ use crate::contract::transport::Transport;
 use crate::contract::{content_type::ContentType, param::Param};
 use crate::Contract;
 use comfund_paths::path_template::{PathTemplate, Segment};
-use quote::{format_ident, quote, ToTokens};
+use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::parse_quote;
 
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
@@ -16,7 +16,8 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
 
     // TODO: Add "not any other feature" clause to conditional reexport,
     // when other client backends become supported
-    quote! {
+    quote_spanned! {
+        contract.id.span()=>
         #[cfg(all(feature = "reqwest"))]
         pub use reqwest::*;
 
@@ -99,7 +100,7 @@ mod static_impl {
     use super::*;
 
     pub fn implement(contract: &Contract) -> impl ToTokens {
-        let root_cell_id = format_ident!("____{}_ROOT", contract.id.to_string());
+        let root_cell_id = format_ident!("____{}_ROOT", contract.id);
 
         let singleton = impl_root_singleton(&root_cell_id, contract);
         let endpoints = contract
@@ -130,8 +131,8 @@ mod static_impl {
 
     fn impl_root_singleton(root_cell_id: &syn::Ident, contract: &Contract) -> impl ToTokens {
         // TODO: Add snake case conversion
-        let set_fn_name = format_ident!("set_{}_root", contract.id.to_string().to_lowercase());
-        let get_fn_name = format_ident!("get_{}_root", contract.id.to_string().to_lowercase());
+        let set_fn_name = format_ident!("set_{}_root", contract.id.to_string().to_lowercase(), span = contract.id.span());
+        let get_fn_name = format_ident!("get_{}_root", contract.id.to_string().to_lowercase(), span = contract.id.span());
 
         quote! {
             #[allow(non_upper_case_globals)]
@@ -190,8 +191,14 @@ fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     let body_params = body_expr(ep);
 
     let content_mapping = match ep.meta.options().content_type.clone().unwrap_or_default() {
-        ContentType::ApplicationJson => quote! { .json() },
-        ContentType::TextPlain => quote! { .text() },
+        ContentType::ApplicationJson => quote_spanned! { 
+            ep.id.span()=>
+            .json() 
+        },
+        ContentType::TextPlain => quote_spanned! { 
+            ep.id.span()=>    
+            .text() 
+        },
     };
 
     quote! {
@@ -216,7 +223,8 @@ fn path_expr(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     } else {
         let path_lit = ep.meta.path_lit();
 
-        return quote! {
+        return quote_spanned! {
+            ep.id.span()=>
             format!("{}{}", #root, #path_lit)
         };
     };
@@ -230,13 +238,15 @@ fn path_expr(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     let segments = template.segments().iter().map(|seg| match seg {
         Segment::Capture(cap) => {
             let lit = syn::LitStr::new(cap, path_span);
-            quote! {
+            quote_spanned! {
+                ep.id.span()=>
                 ::comfund::paths::Segment::Capture(#lit)
             }
         }
         Segment::Static(lit) => {
             let lit = syn::LitStr::new(lit, path_span);
-            quote! {
+            quote_spanned! {
+                ep.id.span()=>
                 ::comfund::paths::Segment::Static(#lit)
             }
         }
@@ -283,7 +293,8 @@ fn path_expr(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
         }
     };
 
-    quote! {
+    quote_spanned! {
+        ep.id.span()=>
         {
             #template_const
             format!("{}{}", #root, ::comfund::paths::serialize(&#template_id, &#inputs_init)?)
@@ -314,8 +325,14 @@ fn body_expr(ep: &Endpoint) -> Option<impl ToTokens> {
     let param_id = &param.name;
 
     let ret = match param.meta.transport() {
-        Transport::Body => quote! { .body(#param_id) },
-        Transport::Json => quote! { .json(#param_id) },
+        Transport::Body => quote_spanned! { 
+            ep.id.span()=>
+            .body(#param_id) 
+        },
+        Transport::Json => quote_spanned! { 
+            ep.id.span()=>
+            .json(#param_id) 
+        },
         _ => unreachable!("Unexpected transport kind of body argument"),
     };
 
