@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, deluxe::ParseMetaItem)]
+#[derive(Debug, Clone, PartialEq, Eq, deluxe::ParseMetaItem)]
 pub enum ContentType {
     #[deluxe(rename = application_json)]
     ApplicationJson,

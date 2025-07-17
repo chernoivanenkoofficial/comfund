@@ -134,7 +134,7 @@ fn def_handler(aep: &ActixEndpoint, ext_type_name: &syn::Ident) -> impl quote::T
     let ret_ty = {
         let ty = aep.ep.ret.clone();
 
-        match aep.ep.meta.options().content_type {
+        match aep.ep.meta.options().content_type.clone().unwrap_or_default() {
             ContentType::ApplicationJson => parse_quote_spanned! {
                 handler_id.span()=>
                 ::actix_web::web::Json<#ty>

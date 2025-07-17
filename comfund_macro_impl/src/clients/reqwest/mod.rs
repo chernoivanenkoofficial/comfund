@@ -189,7 +189,7 @@ fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     let query_params = query_expr(ep).map(|expr| quote! { .query(&#expr)});
     let body_params = body_expr(ep);
 
-    let content_mapping = match ep.meta.options().content_type {
+    let content_mapping = match ep.meta.options().content_type.clone().unwrap_or_default() {
         ContentType::ApplicationJson => quote! { .json() },
         ContentType::TextPlain => quote! { .text() },
     };
