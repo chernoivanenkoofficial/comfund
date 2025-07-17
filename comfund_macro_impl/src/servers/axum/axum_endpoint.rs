@@ -136,7 +136,7 @@ fn def_handler(aep: &AxumEndpoint, ext_type_name: &syn::Ident) -> impl quote::To
     let ret_ty = {
         let ret_ty = aep.ep.ret.clone();
 
-        match aep.ep.meta.options().content_type {
+        match aep.ep.meta.options().content_type.clone().unwrap_or_default() {
             // TODO: Response types mapping when defined common supported returned content types
             ContentType::ApplicationJson => parse_quote!(::axum::Json<#ret_ty>),
             _ => ret_ty,

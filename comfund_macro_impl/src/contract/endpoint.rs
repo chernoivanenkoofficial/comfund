@@ -4,6 +4,7 @@ use crate::contract::content_type::ContentType;
 use crate::contract::method::Method;
 use crate::contract::param::Param;
 use crate::contract::transport::Transport;
+use crate::contract::ContractOptions;
 
 use crate::extensions::*;
 
@@ -29,7 +30,10 @@ pub struct Endpoint {
 }
 
 impl Endpoint {
-    pub fn parse(fn_item: syn::TraitItemFn) -> Result<Self, syn::Error> {
+    pub fn parse(
+        fn_item: syn::TraitItemFn,
+        endpoint_defaults: &EndpointOptions,
+    ) -> Result<Self, syn::Error> {
         let id = fn_item.sig.ident.clone();
 
         let mut attrs = fn_item.attrs;
@@ -40,9 +44,11 @@ impl Endpoint {
         let params = Param::parse_list(fn_item.sig.inputs);
         let ret = get_returned_type(&fn_item.sig.output);
 
-        let (_, meta, params, ret) = combine_results!(sig_validation, meta, params, ret)?;
+        let (_, mut meta, params, ret) = combine_results!(sig_validation, meta, params, ret)?;
 
         let (path_inputs, query_inputs, body_param) = gen_inputs(&id, params)?;
+
+        meta.2 = meta.2.merge(endpoint_defaults);
 
         Ok(Self {
             id,
@@ -101,8 +107,16 @@ deluxe::define_with_optional!(
 #[deluxe(default)]
 pub struct EndpointOptions {
     /// Content type for endpoint
-    #[deluxe(with = deluxe::with::from_str_default)]
-    pub content_type: ContentType,
+    #[deluxe(with = content_type_optional)]
+    pub content_type: Option<ContentType>,
+}
+
+impl EndpointOptions {
+    pub fn merge(mut self, defaults: &Self) -> Self {
+        self.content_type = self.content_type.or(defaults.content_type.clone());
+        
+        self
+    }
 }
 
 fn get_returned_type(ty: &syn::ReturnType) -> syn::Result<syn::Type> {

@@ -10,7 +10,7 @@ use quote::quote;
 
 use endpoint::Endpoint;
 
-use crate::extensions::*;
+use crate::{contract::content_type::ContentType, extensions::*};
 
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let mut stream = quote! {};
@@ -41,10 +41,24 @@ pub struct Contract {
 }
 
 #[derive(Debug, Clone, deluxe::ParseMetaItem)]
-pub struct ServiceMeta(#[deluxe(flatten)] pub ContractOptions);
+pub struct ServiceMeta(
+    #[deluxe(flatten)] pub endpoint::EndpointOptions,
+    #[deluxe(flatten)] pub ContractOptions
+);
+
+impl ServiceMeta {
+    pub fn endpoint_defaults(&self) -> &endpoint::EndpointOptions {
+        &self.0
+    } 
+
+    pub fn options(&self) -> &ContractOptions {
+        &self.1
+    }
+}
 
 #[derive(Debug, Clone, deluxe::ParseMetaItem)]
-pub struct ContractOptions {}
+pub struct ContractOptions {
+}
 
 impl Contract {
     pub fn parse(args: proc_macro2::TokenStream, item_trait: syn::ItemTrait) -> syn::Result<Self> {
@@ -57,7 +71,7 @@ impl Contract {
         let fn_items = get_fn_items(item_trait.items, &mut errors);
         let endpoints = fn_items
             .into_iter()
-            .map(Endpoint::parse)
+            .map(|item| Endpoint::parse(item, meta.endpoint_defaults()))
             .partition_syn_err(&mut errors);
 
         if let Some(err) = errors {
