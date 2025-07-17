@@ -1,6 +1,6 @@
 [package]
 name = "comfund_macro_impl"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Chernoivanenko Serhii <chernoivanenkoofficial@gmail.com>"]
 keywords = ["comfund"]

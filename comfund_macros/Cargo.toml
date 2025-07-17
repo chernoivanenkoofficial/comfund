@@ -1,6 +1,6 @@
 [package]
 name = "comfund_macros"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Chernoivanenko Serhii <chernoivanenkoofficial@gmail.com>"]
 keywords = ["contract", "service"]
@@ -22,4 +22,4 @@ homepage = "https://github.com/chernoivanenkoofficial/comfund"
 proc-macro = true
 
 [dependencies]
-comfund_macro_impl = { path = "../comfund_macro_impl", version = "0.1.1" }
+comfund_macro_impl = { path = "../comfund_macro_impl", version = "0.1.2" }

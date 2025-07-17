@@ -1,6 +1,6 @@
 [package]
 name = "comfund"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["Chernoivanenko Serhii <chernoivanenkoofficial@gmail.com>"]
 keywords = ["contract", "service", "http", "client", "web"]
@@ -20,7 +20,7 @@ readme = "README.md"
 
 
 [dependencies]
-comfund_macros = { path = "../comfund_macros", version = "0.1.1" }
+comfund_macros = { path = "../comfund_macros", version = "0.1.2" }
 paths = { package = "comfund_paths", path = "../comfund_paths", version = "0.1.0", optional = true }
 reqwest = { version = "0.12.22", optional = true, features = [] }
 
