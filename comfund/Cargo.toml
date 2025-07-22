@@ -24,7 +24,15 @@ comfund_macros = { path = "../comfund_macros", version = "0.1.2" }
 paths = { package = "comfund_paths", path = "../comfund_paths", version = "0.1.0", optional = true }
 reqwest = { version = "0.12.22", optional = true, features = [] }
 
+axum = { version = "0.8.4", optional = true }
+tower-layer = { version = "0.3.3", optional = true }
+tower-service = { version = "0.3.3", optional = true }
+
+actix-web = { version = "4.11.0", optional = true }
+actix-service = { version = "2.0.3", optional = true }
+actix-http = { version = "3.11.0", optional = true }
+
 [features]
 reqwest = ["dep:reqwest", "paths"]
-actix-web = []
-axum = []
+actix-web = ["dep:actix-web", "actix-service", "actix-http"]
+axum = ["dep:axum", "tower-layer", "tower-service"]

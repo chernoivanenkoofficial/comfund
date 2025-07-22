@@ -6,6 +6,7 @@ use crate::{contract::Contract, servers::actix_web::actix_endpoint::ActixEndpoin
 
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let service_trait_def = def_service_trait(contract);
+    let wrapper_mod_impl = impl_wrapper_module(contract);
     let configure_fn_impl = impl_configure_fn(contract);
     let attrs = contract.attrs.iter();
 
@@ -24,8 +25,12 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
         #[cfg(feature = "actix-web")]
         pub mod actix_web {
             use super::*;
+
             #(#attrs)*
             #service_trait_def
+
+            #wrapper_mod_impl
+
             #configure_fn_impl
         }
     }
@@ -44,6 +49,18 @@ fn def_service_trait(contract: &Contract) -> impl quote::ToTokens {
     quote! {
         pub trait #contract_id: 'static {
             #(#ep_trait_items)*
+        }
+    }
+}
+
+fn impl_wrapper_module(contract: &Contract) -> impl quote::ToTokens {
+    let fns = contract.endpoints.iter().map(|ep| ActixEndpoint::new(ep).impl_wrap_function(&contract.id));
+    
+    quote! {
+        mod ___wrappers {
+            use super::*;
+
+            #(#fns)*
         }
     }
 }

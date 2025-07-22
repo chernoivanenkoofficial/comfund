@@ -7,6 +7,7 @@ use crate::servers::axum::axum_endpoint::AxumEndpoint;
 
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
     let service_trait_def = def_service_trait(contract);
+    let wrapper_mod_impl = impl_wrapper_module(contract);
     let route_fn_impl = impl_route_function(contract);
     let attrs = contract.attrs.iter();
 
@@ -17,8 +18,12 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
         #[cfg(feature = "axum")]
         pub mod axum {
             use super::*;
+
             #(#attrs)*
             #service_trait_def
+
+            #wrapper_mod_impl
+
             #route_fn_impl
         }
     }
@@ -39,6 +44,18 @@ fn def_service_trait(contract: &Contract) -> impl quote::ToTokens {
             type State: 'static + ::core::marker::Send + ::core::marker::Sync + ::core::clone::Clone;
 
             #(#ep_trait_items)*
+        }
+    }
+}
+
+fn impl_wrapper_module(contract: &Contract) -> impl quote::ToTokens {
+    let fns = contract.endpoints.iter().map(|ep| AxumEndpoint::new(ep).impl_wrap_function(&contract.id));
+    
+    quote! {
+        mod ___wrappers {
+            use super::*;
+
+            #(#fns)*
         }
     }
 }

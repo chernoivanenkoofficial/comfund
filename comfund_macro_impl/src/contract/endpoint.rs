@@ -1,4 +1,5 @@
 use comfund_paths::path_template::PathTemplate;
+use syn::parse_quote;
 
 use crate::contract::content_type::ContentType;
 use crate::contract::method::Method;
@@ -61,8 +62,75 @@ impl Endpoint {
         })
     }
 
+    pub fn path_inputs(&self) ->Option<&Inputs> {
+        self.path_inputs.as_ref()
+    }
+
+    pub fn query_inputs(&self) ->Option<&Inputs> {
+        self.query_inputs.as_ref()
+    }
+
+    pub fn body_param(&self) -> Option<&Param> {
+        self.body_param.as_ref()
+    }    
+
+    pub fn content_type(&self) -> ContentType {
+        self
+            .meta
+            .options()
+            .content_type
+            .clone()
+            .unwrap_or_default()
+    }
+
     pub fn validate(&self) -> Result<(), syn::Error> {
         validate_path(self.meta.path_lit())
+    }
+
+    pub fn params(&self) -> (&[Param], &[Param], Option<&Param>) {
+        fn get_params(inputs: &Option<Inputs>) -> &[Param] {
+            inputs.as_ref().map_or(&[], |inputs| &inputs.params)
+        }
+
+        (
+            get_params(&self.path_inputs),
+            get_params(&self.query_inputs),
+            self.body_param.as_ref(),
+        )
+    }
+
+    pub fn param_names(
+        &self,
+    ) -> (
+        impl Iterator<Item = &syn::Ident>,
+        impl Iterator<Item = &syn::Ident>,
+        Option<&syn::Ident>,
+    ) {
+        let (path_params, query_params, body_param) = self.params();
+
+        (
+            path_params.iter().map(|param| &param.id),
+            query_params.iter().map(|param| &param.id),
+            body_param.map(|param| &param.id),
+        )
+    }
+}
+
+impl<'a> Endpoint {
+    pub fn param_args(
+        &'a self,
+    ) -> (
+        impl Iterator<Item = syn::FnArg> + 'a,
+        impl Iterator<Item = syn::FnArg> + 'a,
+        Option<syn::FnArg>,
+    ) {
+        let (path_params, query_params, body_param) = self.params();
+
+        (
+            path_params.iter().map(Param::as_fn_arg),
+            query_params.iter().map(Param::as_fn_arg),
+            body_param.map(Param::as_fn_arg),
+        )
     }
 }
 
@@ -114,7 +182,7 @@ pub struct EndpointOptions {
 impl EndpointOptions {
     pub fn merge(mut self, defaults: &Self) -> Self {
         self.content_type = self.content_type.or(defaults.content_type.clone());
-        
+
         self
     }
 }
@@ -168,7 +236,7 @@ fn gen_inputs(
             Transport::Path => {
                 combine_err!(
                     errors,
-                    &p.name,
+                    &p.id,
                     "Path params should be specified before query params."
                 );
                 params.next().unwrap();
@@ -184,7 +252,7 @@ fn gen_inputs(
 
     let body_param = params.next().and_then(|param| match param.meta.0 {
         Transport::Path | Transport::Query => {
-            combine_err!(errors, &param.name, "Unexpected transport type");
+            combine_err!(errors, &param.id, "Unexpected transport type");
             None
         }
         _ => Some(param),
@@ -195,7 +263,7 @@ fn gen_inputs(
     for leftover in params {
         combine_err!(
             errors,
-            leftover.name,
+            leftover.id,
             "Unexpected param. At most one body param is supported and no other params can be passed after body param.")
     }
 

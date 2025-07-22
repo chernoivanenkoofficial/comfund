@@ -5,6 +5,7 @@ use crate::contract::transport::Transport;
 use crate::extensions::*;
 
 use quote::quote;
+use syn::parse_quote;
 
 /// Parsed endpoint arg
 #[derive(Debug, Clone, Eq)]
@@ -12,14 +13,14 @@ pub struct Param {
     /// Type of expected arg
     pub ty: syn::Type,
     /// Name of expected arg
-    pub name: syn::Ident,
+    pub id: syn::Ident,
     pub meta: ParamMeta,
     pub attributes: Vec<syn::Attribute>,
 }
 
 impl PartialEq<Param> for Param {
     fn eq(&self, other: &Param) -> bool {
-        self.ty.eq(&other.ty) && self.name.eq(&other.name) && self.meta.eq(&other.meta)
+        self.ty.eq(&other.ty) && self.id.eq(&other.id) && self.meta.eq(&other.meta)
     }
 }
 
@@ -34,19 +35,19 @@ impl Param {
             ));
         };
 
-        let type_ = (*arg.ty).clone();
-        let type_validation = validate_type(&type_);
+        let ty = (*arg.ty).clone();
+        let type_validation = validate_type(&ty);
 
-        let name = desctruct_arg(&arg.pat);
+        let id = desctruct_arg(&arg.pat);
 
         let meta = deluxe::extract_attributes(&mut arg);
         let attributes = arg.attrs;
 
-        let (name, meta, _) = combine_results!(name, meta, type_validation)?;
+        let (id, meta, _) = combine_results!(id, meta, type_validation)?;
 
         Ok(Self {
-            name,
-            ty: type_,
+            id,
+            ty,
             meta,
             attributes,
         })
@@ -56,12 +57,12 @@ impl Param {
         inputs.into_iter().map(Self::parse).collect_syn_results()
     }
 
-    pub fn as_function_argument(&self) -> proc_macro2::TokenStream {
-        let id = &self.name;
+    pub fn as_fn_arg(&self) -> syn::FnArg {
+        let id = &self.id;
         let ty = &self.ty;
         let attrs = self.attributes.iter();
 
-        quote!(#(#attrs)* #id: #ty)
+        parse_quote!(#(#attrs)* #id: #ty)
     }
 }
 

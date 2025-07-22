@@ -89,7 +89,7 @@ mod client_impl {
 
         quote! {
             #(#attrs)*
-            #sig {
+            pub #sig {
                 #body
             }
         }
@@ -123,7 +123,7 @@ mod static_impl {
 
         quote! {
             #(#attrs)*
-            #sig {
+            pub #sig {
                 #body
             }
         }
@@ -149,22 +149,21 @@ mod static_impl {
     }
 }
 
-fn sig(ep: &Endpoint, with_reciever: bool) -> impl ToTokens {
-    let path_params = ep.path_inputs.as_ref().map_or(quote! {}, |inputs| {
-        let params = inputs.params.iter().map(Param::as_function_argument);
-        quote!(#(#params,)*)
-    });
-
-    let query_params = ep.query_inputs.as_ref().map_or(quote! {}, |inputs| {
-        let params = inputs.params.iter().map(Param::as_function_argument);
-        quote!(#(#params,)*)
-    });
-
-    let body_param = ep.body_param.as_ref().map(Param::as_function_argument);
-
-    let ep_name = &ep.id;
+fn sig(ep: &Endpoint, with_reciever: bool) -> syn::Signature {
+    use syn::punctuated::Punctuated;
+    
+    let (path_params, query_params, body_param) = ep.param_args();
+    let id = &ep.id;
 
     let ret_ty = &ep.ret;
+
+    let mut args = Punctuated::<_, syn::Token![,]>::new();
+
+    args.extend(path_params);
+    args.extend(query_params);
+    args.extend(body_param);
+
+    args.pop_punct();
 
     let reciever = if with_reciever {
         Some(quote! { &self, })
@@ -172,8 +171,8 @@ fn sig(ep: &Endpoint, with_reciever: bool) -> impl ToTokens {
         None
     };
 
-    quote! {
-        pub async fn #ep_name(#reciever #path_params #query_params #body_param) -> ::comfund::Result<#ret_ty>
+    parse_quote! {
+        async fn #id(#reciever #args) -> ::comfund::Result<#ret_ty>
     }
 }
 
@@ -186,9 +185,9 @@ fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
         Method::Patch => parse_quote!(::request::Method::PATCH),
     };
 
-    let path_params = path_expr(root, ep);
-    let query_params = query_expr(ep).map(|expr| quote! { .query(&#expr)});
-    let body_params = body_expr(ep);
+    let path_expr = path_expr(root, ep);
+    let query_expr = query_expr(ep).map(|expr| quote! { .query(&#expr)});
+    let body_expr = body_expr(ep);
 
     let content_mapping = match ep.meta.options().content_type.clone().unwrap_or_default() {
         ContentType::ApplicationJson => quote_spanned! { 
@@ -205,9 +204,9 @@ fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
         ::reqwest::Client::builder()
             .build()
             .map_err(::comfund::ClientError::Reqwest)?
-            .request(#method, #path_params)
-            #query_params
-            #body_params
+            .request(#method, #path_expr)
+            #query_expr
+            #body_expr
             .send()
             .await
             .map_err(::comfund::ClientError::Reqwest)?
@@ -280,13 +279,13 @@ fn path_expr(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     };
 
     let inputs_init = if inputs.is_flat() {
-        let name = &inputs.params.first().unwrap().name;
+        let name = &inputs.params.first().unwrap().id;
 
         quote! {
             #name
         }
     } else {
-        let query_struct_init = inputs.initializator(None).unwrap();
+        let query_struct_init = inputs.initializator::<syn::Ident>(None).unwrap();
 
         quote! {
             #query_struct_init
@@ -306,13 +305,13 @@ fn query_expr(ep: &Endpoint) -> Option<impl ToTokens> {
     let inputs = ep.query_inputs.as_ref()?;
 
     if inputs.is_flat() {
-        let name = &inputs.params.first().unwrap().name;
+        let name = &inputs.params.first().unwrap().id;
 
         Some(quote! {
             #name
         })
     } else {
-        let query_struct_init = inputs.initializator(None);
+        let query_struct_init = inputs.initializator::<syn::Ident>(None);
 
         Some(quote! {
             #query_struct_init
@@ -322,7 +321,7 @@ fn query_expr(ep: &Endpoint) -> Option<impl ToTokens> {
 
 fn body_expr(ep: &Endpoint) -> Option<impl ToTokens> {
     let param = ep.body_param.as_ref()?;
-    let param_id = &param.name;
+    let param_id = &param.id;
 
     let ret = match param.meta.transport() {
         Transport::Body => quote_spanned! { 
