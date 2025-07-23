@@ -1,13 +1,21 @@
-mod actix_endpoint;
+mod service_trait;
+mod wrapper_mod;
+mod configure_fn;
 
 use quote::{format_ident, quote, quote_spanned};
+use syn::{parse_quote, parse_quote_spanned};
 
-use crate::{contract::Contract, servers::actix_web::actix_endpoint::ActixEndpoint};
+use crate::contract::endpoint::Endpoint;
+use crate::contract::param::Param;
+use crate::contract::Contract;
+use crate::servers::names::Names;
+use crate::servers::server_endpoint;
+use crate::servers::wrap_fn::WrapperFn;
 
 pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
-    let service_trait_def = def_service_trait(contract);
-    let wrapper_mod_impl = impl_wrapper_module(contract);
-    let configure_fn_impl = impl_configure_fn(contract);
+    let service_trait = service_trait::def(contract);
+    let wrapper_mod = wrapper_mod::def(contract);
+    let configure_fn = configure_fn::def(contract);
     let attrs = contract.attrs.iter();
 
     quote_spanned! {
@@ -27,93 +35,11 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
             use super::*;
 
             #(#attrs)*
-            #service_trait_def
+            #service_trait
 
-            #wrapper_mod_impl
+            #wrapper_mod
 
-            #configure_fn_impl
+            #configure_fn
         }
     }
-}
-
-fn def_service_trait(contract: &Contract) -> impl quote::ToTokens {
-    let contract_id = &contract.id;
-    let actix_eps = contract
-        .endpoints
-        .iter()
-        .map(ActixEndpoint::new)
-        .collect::<Vec<_>>();
-
-    let ep_trait_items = actix_eps.iter().map(ActixEndpoint::def_in_trait);
-
-    quote! {
-        pub trait #contract_id: 'static {
-            #(#ep_trait_items)*
-        }
-    }
-}
-
-fn impl_wrapper_module(contract: &Contract) -> impl quote::ToTokens {
-    let fns = contract.endpoints.iter().map(|ep| ActixEndpoint::new(ep).impl_wrap_function(&contract.id));
-    
-    quote! {
-        mod ___wrappers {
-            use super::*;
-
-            #(#fns)*
-        }
-    }
-}
-
-fn impl_configure_fn(contract: &Contract) -> impl quote::ToTokens {
-    let contract_id = &contract.id;
-    let configure_fn_id = get_configure_fn_id(contract_id);
-    let service_trait_var = format_ident!("C");
-    let routing_expressions = get_routing_expressions(contract, &service_trait_var);
-
-    quote_spanned! {
-        contract.id.span()=>
-        pub fn #configure_fn_id<#service_trait_var: #contract_id>(cfg: &mut ::actix_web::web::ServiceConfig) {
-            cfg #(#routing_expressions)*;
-        }
-    }
-}
-
-fn get_configure_fn_id(contract_id: &syn::Ident) -> syn::Ident {
-    format_ident!("configure_{}", stringcase::snake_case(&contract_id.to_string()), span = contract_id.span())
-}
-
-fn get_routing_expressions(
-    contract: &Contract,
-    service_trait_var: &syn::Ident,
-) -> impl Iterator<Item = impl quote::ToTokens> {
-    use std::collections::HashMap;
-
-    let mut ep_map = HashMap::with_capacity(contract.endpoints.len());
-    for ep in &contract.endpoints {
-        ep_map
-            .entry(ep.meta.path_lit())
-            .or_insert_with(Vec::new)
-            .push(ep)
-    }
-
-    let mut exprs = Vec::with_capacity(ep_map.len());
-
-    for (path, eps) in ep_map {
-        let route_expressions = eps
-            .into_iter()
-            .map(|ep| ActixEndpoint::new(ep).method_router(service_trait_var));
-
-        let expr = quote_spanned! {
-            contract.id.span()=>
-            .service(
-                ::actix_web::web::resource(#path)
-                    #(.route(#route_expressions))*
-            )
-        };
-
-        exprs.push(expr);
-    }
-
-    exprs.into_iter()
 }

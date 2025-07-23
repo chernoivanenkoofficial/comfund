@@ -71,7 +71,7 @@ impl Contract {
         let fn_items = get_fn_items(item_trait.items, &mut errors);
         let endpoints = fn_items
             .into_iter()
-            .map(|item| Endpoint::parse(item, meta.endpoint_defaults()))
+            .map(|item| Endpoint::parse(id.clone(), item, meta.endpoint_defaults()))
             .partition_syn_err(&mut errors);
 
         if let Some(err) = errors {

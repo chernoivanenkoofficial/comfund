@@ -16,6 +16,8 @@ use super::inputs::{self, Inputs};
 pub struct Endpoint {
     /// Name of function to be rendered for client/server
     pub id: syn::Ident,
+    /// Name of contract, which this endpoint belogns to
+    pub contract_id: syn::Ident,
     /// Endpoint metadata
     pub meta: EndpointMeta,
     /// Params passed in path part of endpoint request
@@ -32,6 +34,7 @@ pub struct Endpoint {
 
 impl Endpoint {
     pub fn parse(
+        contract_id: syn::Ident,
         fn_item: syn::TraitItemFn,
         endpoint_defaults: &EndpointOptions,
     ) -> Result<Self, syn::Error> {
@@ -53,6 +56,7 @@ impl Endpoint {
 
         Ok(Self {
             id,
+            contract_id,
             meta,
             path_inputs,
             query_inputs,

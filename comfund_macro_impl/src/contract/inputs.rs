@@ -7,6 +7,8 @@ use crate::contract::endpoint::Endpoint;
 use crate::contract::param::Param;
 use crate::contract::Contract;
 
+/// A set of params, passed through the same URL [transport](`crate::contract::transport::Transport`) 
+/// method. Currently, `Inputs` will be constructed only for `path` and `query` params.  
 #[derive(Debug, Clone)]
 pub struct Inputs {
     pub id: Option<syn::Ident>,
@@ -26,6 +28,11 @@ impl Inputs {
         }
     }
 
+    /// Returns, if this inputs set actually won't be wrapped into new struct.
+    /// 
+    /// `Inputs` are considered flat, if only one arg is passed through 
+    /// the given [transport](`crate::contract::transport::Transport`), thus no 
+    /// wrapping for serializing/deserializing is required.
     pub fn is_flat(&self) -> bool {
         self.definition.is_none()
     }
@@ -151,6 +158,20 @@ impl Inputs {
     }
 }
 
+/// Generate `Inputs` struct for endpoint params. 
+/// 
+/// It's up to caller to ensure, that all [params](`crate::contract::param::Param`) 
+/// have the same transport type.
+/// 
+/// ## Arguments
+/// - `ep_name`: name of endpoint, which will be used for generating wrapper type name.
+/// - `params`: a vec of params to be included in result [`Inputs`] set.
+/// - `suffix`: a suffix for generated type, that will be included between 
+/// endpoint name and "Inputs".
+/// 
+/// ## Returns
+/// `Some(Inputs)` if `params` had any elements,
+/// otherwise `None`.
 pub fn from_params(ep_name: &syn::Ident, params: Vec<Param>, suffix: &str) -> Option<Inputs> {
     if params.is_empty() {
         None
@@ -212,6 +233,7 @@ pub fn from_params(ep_name: &syn::Ident, params: Vec<Param>, suffix: &str) -> Op
     }
 }
 
+/// Generate type for use in the [`Inputs`] construction.
 fn gen_type(ep_name: &syn::Ident, suffix: &str) -> syn::Type {
     let mut ep_str = ep_name.to_string();
     ep_str.push_str(suffix);
