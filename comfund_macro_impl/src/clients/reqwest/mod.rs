@@ -131,8 +131,16 @@ mod static_impl {
 
     fn impl_root_singleton(root_cell_id: &syn::Ident, contract: &Contract) -> impl ToTokens {
         // TODO: Add snake case conversion
-        let set_fn_name = format_ident!("set_{}_root", contract.id.to_string().to_lowercase(), span = contract.id.span());
-        let get_fn_name = format_ident!("get_{}_root", contract.id.to_string().to_lowercase(), span = contract.id.span());
+        let set_fn_name = format_ident!(
+            "set_{}_root",
+            contract.id.to_string().to_lowercase(),
+            span = contract.id.span()
+        );
+        let get_fn_name = format_ident!(
+            "get_{}_root",
+            contract.id.to_string().to_lowercase(),
+            span = contract.id.span()
+        );
 
         quote! {
             #[allow(non_upper_case_globals)]
@@ -151,7 +159,7 @@ mod static_impl {
 
 fn sig(ep: &Endpoint, with_reciever: bool) -> syn::Signature {
     use syn::punctuated::Punctuated;
-    
+
     let (path_params, query_params, body_param) = ep.param_args();
     let id = &ep.id;
 
@@ -190,13 +198,13 @@ fn impl_body(root: syn::Expr, ep: &Endpoint) -> impl ToTokens {
     let body_expr = body_expr(ep);
 
     let content_mapping = match ep.meta.options().content_type.clone().unwrap_or_default() {
-        ContentType::ApplicationJson => quote_spanned! { 
+        ContentType::ApplicationJson => quote_spanned! {
             ep.id.span()=>
-            .json() 
+            .json()
         },
-        ContentType::TextPlain => quote_spanned! { 
-            ep.id.span()=>    
-            .text() 
+        ContentType::TextPlain => quote_spanned! {
+            ep.id.span()=>
+            .text()
         },
     };
 
@@ -324,13 +332,13 @@ fn body_expr(ep: &Endpoint) -> Option<impl ToTokens> {
     let param_id = &param.id;
 
     let ret = match param.meta.transport() {
-        Transport::Body => quote_spanned! { 
+        Transport::Body => quote_spanned! {
             ep.id.span()=>
-            .body(#param_id) 
+            .body(#param_id)
         },
-        Transport::Json => quote_spanned! { 
+        Transport::Json => quote_spanned! {
             ep.id.span()=>
-            .json(#param_id) 
+            .json(#param_id)
         },
         _ => unreachable!("Unexpected transport kind of body argument"),
     };

@@ -1,6 +1,9 @@
 use syn::{parse_quote, parse_quote_spanned};
 
-use crate::{contract::{endpoint::Endpoint, param::Param, Contract}, servers::{names::Names, wrap_fn::WrapperFn}};
+use crate::{
+    contract::{endpoint::Endpoint, param::Param, Contract},
+    servers::{names::Names, wrap_fn::WrapperFn},
+};
 
 pub fn def(contract: &Contract) -> syn::ItemMod {
     let fns = contract.endpoints.iter().map(impl_wrapper_function);

@@ -1,7 +1,5 @@
 /// A simple demonstration of basic features of `comfund`.
-#[comfund::contract(
-    content_type = "application/json"
-)]
+#[comfund::contract(content_type = "application/json")]
 pub trait Service {
     /// Hello world! version of axum contract.
     #[endpoint(get, "/", content_type = "text/plain")]

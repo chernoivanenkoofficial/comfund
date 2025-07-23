@@ -1,6 +1,6 @@
+mod configure_fn;
 mod service_trait;
 mod wrapper_mod;
-mod configure_fn;
 
 use quote::{format_ident, quote, quote_spanned};
 use syn::{parse_quote, parse_quote_spanned};

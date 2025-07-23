@@ -1,7 +1,10 @@
-use syn::{parse_quote, parse_quote_spanned};
 use quote::quote;
+use syn::{parse_quote, parse_quote_spanned};
 
-use crate::{contract::{endpoint::Endpoint, method::Method, Contract}, servers::{names::Names, server_endpoint}};
+use crate::{
+    contract::{endpoint::Endpoint, method::Method, Contract},
+    servers::{names::Names, server_endpoint},
+};
 
 pub fn def(contract: &Contract) -> syn::ItemFn {
     let contract_id = &contract.id;

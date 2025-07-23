@@ -7,7 +7,7 @@ use crate::contract::endpoint::Endpoint;
 use crate::contract::param::Param;
 use crate::contract::Contract;
 
-/// A set of params, passed through the same URL [transport](`crate::contract::transport::Transport`) 
+/// A set of params, passed through the same URL [transport](`crate::contract::transport::Transport`)
 /// method. Currently, `Inputs` will be constructed only for `path` and `query` params.  
 #[derive(Debug, Clone)]
 pub struct Inputs {
@@ -18,8 +18,8 @@ pub struct Inputs {
 }
 
 impl Inputs {
-    pub const DEFAULT_PATH_NAME: &'static str = "path_inputs"; 
-    pub const DEFAULT_QUERY_NAME: &'static str = "query_inputs"; 
+    pub const DEFAULT_PATH_NAME: &'static str = "path_inputs";
+    pub const DEFAULT_QUERY_NAME: &'static str = "query_inputs";
 
     pub fn is_empty(inputs: Option<&Self>) -> bool {
         match inputs {
@@ -29,9 +29,9 @@ impl Inputs {
     }
 
     /// Returns, if this inputs set actually won't be wrapped into new struct.
-    /// 
-    /// `Inputs` are considered flat, if only one arg is passed through 
-    /// the given [transport](`crate::contract::transport::Transport`), thus no 
+    ///
+    /// `Inputs` are considered flat, if only one arg is passed through
+    /// the given [transport](`crate::contract::transport::Transport`), thus no
     /// wrapping for serializing/deserializing is required.
     pub fn is_flat(&self) -> bool {
         self.definition.is_none()
@@ -46,16 +46,16 @@ impl Inputs {
     }
 
     /// Get initializator statement for this [`Inputs`] struct.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// let inputs = from_params(
-    ///     &parse_quote!(hello_world), 
+    ///     &parse_quote!(hello_world),
     ///     /* params like `hello: String`, world: `bool` */,
     ///     ""
     /// );    
-    /// 
+    ///
     /// // Definition will look like:
     /// //
     /// // #[attributes]
@@ -63,23 +63,26 @@ impl Inputs {
     /// //     hello: String,
     /// //     world: bool
     /// // }
-    /// 
+    ///
     /// let initialiator = inputs.initializator(&parse_quote!(hello_world_inputs), None).unwrap();
     /// // initialiator will be an expression of next content:
     /// //
     /// // HelloWorldInputs {
-    /// //   hello, 
+    /// //   hello,
     /// //   world
-    /// // } 
-    /// // 
+    /// // }
+    /// //
     /// // or, if a list of init expressions was specified:
     /// //
     /// // HelloWorldInputs {
-    /// //   hello: { exprs[1] }, 
+    /// //   hello: { exprs[1] },
     /// //   world: { exprs[2] }
-    /// // } 
+    /// // }
     /// ```
-    pub fn initializator<T: quote::ToTokens>(&self, init_exprs: Option<&[T]>) -> Option<impl quote::ToTokens> {
+    pub fn initializator<T: quote::ToTokens>(
+        &self,
+        init_exprs: Option<&[T]>,
+    ) -> Option<impl quote::ToTokens> {
         if self.is_flat() {
             return None;
         }
@@ -107,27 +110,27 @@ impl Inputs {
     }
 
     /// Get destructor statement for this [`Inputs`] struct.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// let inputs = from_params(
-    ///     &parse_quote!(hello_world), 
+    ///     &parse_quote!(hello_world),
     ///     /* params like `hello: String`, world: `bool` */,
     ///     ""
     /// );    
-    /// 
-    /// // Definition will look like 
+    ///
+    /// // Definition will look like
     /// // #[attributes]
     /// // pub struct HelloWorldInputs {
     /// //     hello: String,
     /// //     world: bool
     /// // }
-    /// 
+    ///
     /// let destructor = inputs.destructor(&parse_quote!(hello_world_inputs)).unwrap();
     /// // destructor will be stream of next content:
     /// // let HelloWorldInputs {
-    /// //   hello, 
+    /// //   hello,
     /// //   world
     /// // } = hello_world_inputs;
     /// ```
@@ -139,16 +142,18 @@ impl Inputs {
         let fields = self.params.iter().map(|p| &p.id);
         let name = &self.ty;
 
-        Some(
-            quote! {
-                let #name {
-                    #(#fields),*
-                } = #var;
-            }
-        )
+        Some(quote! {
+            let #name {
+                #(#fields),*
+            } = #var;
+        })
     }
 
-    pub fn as_handler_arg(&self, wrapper: &syn::Path, default_id: impl FnOnce() -> syn::Ident) -> syn::FnArg {
+    pub fn as_handler_arg(
+        &self,
+        wrapper: &syn::Path,
+        default_id: impl FnOnce() -> syn::Ident,
+    ) -> syn::FnArg {
         let id = self.id_or(default_id());
         let ty = &self.ty;
 
@@ -158,17 +163,17 @@ impl Inputs {
     }
 }
 
-/// Generate `Inputs` struct for endpoint params. 
-/// 
-/// It's up to caller to ensure, that all [params](`crate::contract::param::Param`) 
+/// Generate `Inputs` struct for endpoint params.
+///
+/// It's up to caller to ensure, that all [params](`crate::contract::param::Param`)
 /// have the same transport type.
-/// 
+///
 /// ## Arguments
 /// - `ep_name`: name of endpoint, which will be used for generating wrapper type name.
 /// - `params`: a vec of params to be included in result [`Inputs`] set.
-/// - `suffix`: a suffix for generated type, that will be included between 
-/// endpoint name and "Inputs".
-/// 
+/// - `suffix`: a suffix for generated type, that will be included between
+///   endpoint name and "Inputs".
+///
 /// ## Returns
 /// `Some(Inputs)` if `params` had any elements,
 /// otherwise `None`.

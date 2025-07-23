@@ -1,10 +1,9 @@
 use quote::{format_ident, quote, quote_spanned};
-use syn::{parse_quote, parse_quote_spanned, Token, TypeParamBound};
 use syn::punctuated::Punctuated;
+use syn::{parse_quote, parse_quote_spanned, Token, TypeParamBound};
 
 use crate::contract::{endpoint::Endpoint, inputs::Inputs};
 use crate::servers::names::Names;
-
 
 pub fn service_trait_var() -> syn::Ident {
     syn::Ident::new("C", proc_macro2::Span::call_site())
@@ -12,7 +11,7 @@ pub fn service_trait_var() -> syn::Ident {
 
 pub fn def_ext_type(
     ext_type_id: &syn::Ident,
-    bounds: Punctuated<TypeParamBound, syn::Token![+]>
+    bounds: Punctuated<TypeParamBound, syn::Token![+]>,
 ) -> syn::TraitItemType {
     parse_quote_spanned!(
         ext_type_id.span()=>
@@ -33,36 +32,33 @@ pub fn def_input_arg(
     parse_quote!(#id: #wrapper::<#ty>)
 }
 
-/// Get punctuated args for handler signature, including extensions arg. 
-/// 
-/// # Example 
-/// ``` 
+/// Get punctuated args for handler signature, including extensions arg.
+///
+/// # Example
+/// ```
 /// let ep = Endpoint::parse(parse_quote! {
 ///     #[endpoint(get, "/some_path")]
 ///     fn endpoint(
-///         #[param(...)] arg1: u32, 
-///         #[param(...)] arg2: u32, 
+///         #[param(...)] arg1: u32,
+///         #[param(...)] arg2: u32,
 ///         #[param(...)] arg3: u32
 ///     );
 /// }).unwrap();
-/// 
+///
 /// let args = handler_sig_args(&ep, format_ident!("EndpointExtensions"));
 /// assert_eq!(
 ///     args.into_token_stream(),
 ///     quote! {
 ///         arg1: u32, arg2: u32, arg3: u32, extensions: Self::EnspointExtensions
 ///     }
-/// ) 
+/// )
 /// ```
-pub fn handler_sig_args(
-    ep: &Endpoint,
-    names: &Names
-) -> Punctuated<syn::FnArg, Token![,]> {
+pub fn handler_sig_args(ep: &Endpoint, names: &Names) -> Punctuated<syn::FnArg, Token![,]> {
     let ext_type_id = names.ext_type_id();
 
     let (path_params, query_params, body_param) = ep.param_args();
-    
-    let mut fn_args= Punctuated::new();
+
+    let mut fn_args = Punctuated::new();
 
     fn_args.extend(path_params);
     fn_args.extend(query_params);
@@ -76,30 +72,28 @@ pub fn handler_sig_args(
     fn_args
 }
 
-/// Get punctuated args for handler call, including extensions arg. 
-/// 
-/// # Example 
-/// ``` 
+/// Get punctuated args for handler call, including extensions arg.
+///
+/// # Example
+/// ```
 /// let ep = Endpoint::parse(parse_quote! {
 ///     #[endpoint(get, "/some_path")]
 ///     fn endpoint(
-///         #[param(...)] arg1: u32, 
-///         #[param(...)] arg2: u32, 
+///         #[param(...)] arg1: u32,
+///         #[param(...)] arg2: u32,
 ///         #[param(...)] arg3: u32
 ///     );
 /// }).unwrap();
-/// 
+///
 /// let args = handler_sig_args(&ep);
 /// assert_eq!(
 ///     args.into_token_stream(),
 ///     quote! {
 ///         arg1, arg2, arg3, extensions
 ///     }
-/// ) 
+/// )
 /// ```
-pub fn handler_call_args(
-    ep: &Endpoint
-) -> Punctuated<syn::Ident, Token![,]> {
+pub fn handler_call_args(ep: &Endpoint) -> Punctuated<syn::Ident, Token![,]> {
     let (path_names, query_names, body_name) = ep.param_names();
 
     let mut forwarded = Punctuated::new();
@@ -112,22 +106,21 @@ pub fn handler_call_args(
     forwarded
 }
 
-
 /// Get destructor statement for given inputs.
-/// 
+///
 /// ## Arguments
-/// 
+///
 /// - `inputs`: inputs of endpoint.
 /// - `default_name`: default_name of function arg for `inputs`.
-/// 
+///
 /// ## Returns
-/// 
+///
 /// Returns statement, if `inputs` were not `None` and not [flat](`Inputs::is_flat`).
 /// Otherwise, returns `None`.
 pub fn destructor(
-    inputs: Option<&Inputs>, 
+    inputs: Option<&Inputs>,
     default_name: &str,
-    extract: impl FnOnce(syn::Expr) -> syn::Expr
+    extract: impl FnOnce(syn::Expr) -> syn::Expr,
 ) -> Option<impl quote::ToTokens> {
     inputs.and_then(|inputs| {
         let ident = inputs.id().cloned().unwrap_or(syn::Ident::new(

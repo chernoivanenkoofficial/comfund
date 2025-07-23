@@ -2,7 +2,7 @@ use quote::format_ident;
 
 use crate::contract::endpoint::Endpoint;
 
-/// Component for defining common names of items generated for endpoint. 
+/// Component for defining common names of items generated for endpoint.
 pub struct Names {
     handler_id: syn::Ident,
     decorator_id: syn::Ident,
@@ -38,7 +38,7 @@ impl Names {
         &self.decorator_id
     }
 
-    pub  fn ext_type_id(&self) -> &syn::Ident {
+    pub fn ext_type_id(&self) -> &syn::Ident {
         &self.ext_type_name
     }
 }

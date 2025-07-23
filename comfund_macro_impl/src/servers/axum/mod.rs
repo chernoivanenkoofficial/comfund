@@ -1,6 +1,6 @@
+mod route_fn;
 mod service_trait;
 mod wrapper_mod;
-mod route_fn;
 
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::{parse_quote, parse_quote_spanned};
@@ -38,4 +38,3 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
         }
     }
 }
-

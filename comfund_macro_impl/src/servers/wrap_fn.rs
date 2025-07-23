@@ -36,9 +36,9 @@ where
     /// - `path_extractor`: path to back-end's extractor of URL path parameters.
     /// - `query_extractor`: path to back-end's extractor of URL query parameters.
     /// - `body_type_mapper`: a map from endpoint and body param ty to a type, expected by
-    /// server back-end.
+    ///   server back-end.
     /// - `ret_type_mapper`: a map from endpoint return type to a return type,
-    /// appropriate for server back-end.
+    ///   appropriate for server back-end.
     /// - `result_mapper`: a map from handler result expression to a result, returned to back-end.
     pub fn new(
         path_extractor: syn::Path,
@@ -71,10 +71,16 @@ where
 
         let ret = (self.ret_type_mapper)(ep);
 
-        let path_destructor =
-            server_endpoint::destructor(ep.path_inputs(), Inputs::DEFAULT_PATH_NAME, self.inputs_unwrapper.clone());
-        let query_destructor =
-            server_endpoint::destructor(ep.query_inputs(), Inputs::DEFAULT_QUERY_NAME, self.inputs_unwrapper.clone());
+        let path_destructor = server_endpoint::destructor(
+            ep.path_inputs(),
+            Inputs::DEFAULT_PATH_NAME,
+            self.inputs_unwrapper.clone(),
+        );
+        let query_destructor = server_endpoint::destructor(
+            ep.query_inputs(),
+            Inputs::DEFAULT_QUERY_NAME,
+            self.inputs_unwrapper.clone(),
+        );
 
         let forwarded = server_endpoint::handler_call_args(ep);
 
@@ -100,7 +106,7 @@ where
     /// ## Arguments
     /// * `ep`: endpoint, for which the argument list should be constructed.
     /// * `names`: a reference to the [`Names`] component with defined names
-    /// of endpoint items in contract trait.
+    ///   of endpoint items in contract trait.
     fn define_args(&self, ep: &Endpoint, names: &Names) -> Punctuated<syn::FnArg, syn::Token![,]> {
         let mut args = syn::punctuated::Punctuated::new();
 

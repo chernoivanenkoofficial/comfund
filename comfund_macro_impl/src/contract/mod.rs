@@ -43,13 +43,13 @@ pub struct Contract {
 #[derive(Debug, Clone, deluxe::ParseMetaItem)]
 pub struct ServiceMeta(
     #[deluxe(flatten)] pub endpoint::EndpointOptions,
-    #[deluxe(flatten)] pub ContractOptions
+    #[deluxe(flatten)] pub ContractOptions,
 );
 
 impl ServiceMeta {
     pub fn endpoint_defaults(&self) -> &endpoint::EndpointOptions {
         &self.0
-    } 
+    }
 
     pub fn options(&self) -> &ContractOptions {
         &self.1
@@ -57,8 +57,7 @@ impl ServiceMeta {
 }
 
 #[derive(Debug, Clone, deluxe::ParseMetaItem)]
-pub struct ContractOptions {
-}
+pub struct ContractOptions {}
 
 impl Contract {
     pub fn parse(args: proc_macro2::TokenStream, item_trait: syn::ItemTrait) -> syn::Result<Self> {

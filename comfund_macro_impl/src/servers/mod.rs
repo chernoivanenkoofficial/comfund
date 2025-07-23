@@ -5,9 +5,9 @@ use crate::contract::Contract;
 mod actix_web;
 mod axum;
 
+mod names;
 mod server_endpoint;
 mod wrap_fn;
-mod names;
 
 use names::Names;
 use wrap_fn::WrapperFn;

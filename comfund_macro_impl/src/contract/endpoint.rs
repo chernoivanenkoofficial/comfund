@@ -66,25 +66,20 @@ impl Endpoint {
         })
     }
 
-    pub fn path_inputs(&self) ->Option<&Inputs> {
+    pub fn path_inputs(&self) -> Option<&Inputs> {
         self.path_inputs.as_ref()
     }
 
-    pub fn query_inputs(&self) ->Option<&Inputs> {
+    pub fn query_inputs(&self) -> Option<&Inputs> {
         self.query_inputs.as_ref()
     }
 
     pub fn body_param(&self) -> Option<&Param> {
         self.body_param.as_ref()
-    }    
+    }
 
     pub fn content_type(&self) -> ContentType {
-        self
-            .meta
-            .options()
-            .content_type
-            .clone()
-            .unwrap_or_default()
+        self.meta.options().content_type.clone().unwrap_or_default()
     }
 
     pub fn validate(&self) -> Result<(), syn::Error> {
