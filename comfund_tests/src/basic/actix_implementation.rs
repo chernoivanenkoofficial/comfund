@@ -13,18 +13,12 @@ impl definition::actix_web::Service for ServiceImpl {
     }
 
     type AddTwoExtensions = ();
-    async fn add_two(
-        path_inputs: web::Path<definition::AddTwoPathInputs>,
-        _extensions: Self::AddTwoExtensions,
-    ) -> web::Json<u32> {
-        web::Json(path_inputs.a + path_inputs.b)
+    async fn add_two(a: u32, b: u32, _extensions: Self::AddTwoExtensions) -> u32 {
+        a + b
     }
 
     type AddThreeExtensions = ();
-    async fn add_three(
-        _path_inputs: web::Path<definition::AddThreePathInputs>,
-        _extensions: Self::AddThreeExtensions,
-    ) -> web::Json<()> {
-        web::Json(())
+    async fn add_three(a: u32, b: u32, c: u32, _extensions: Self::AddThreeExtensions) -> u32 {
+        a + b + c
     }
 }

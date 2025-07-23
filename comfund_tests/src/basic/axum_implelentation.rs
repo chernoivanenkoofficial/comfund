@@ -13,18 +13,12 @@ impl axum::Service for ServiceImpl {
     }
 
     type AddTwoExtensions = ();
-    async fn add_two(
-        path_inputs: ::axum::extract::Path<AddTwoPathInputs>,
-        _extensions: Self::AddTwoExtensions,
-    ) -> ::axum::Json<u32> {
-        ::axum::Json(path_inputs.a + path_inputs.b)
+    async fn add_two(a: u32, b: u32, _extensions: Self::HelloWorldExtensions) -> u32 {
+        a + b
     }
 
     type AddThreeExtensions = ();
-    async fn add_three(
-        _path_inputs: ::axum::extract::Path<AddThreePathInputs>,
-        _extensions: Self::AddThreeExtensions,
-    ) -> ::axum::Json<()> {
-        ::axum::Json(())
+    async fn add_three(a: u32, b: u32, c: u32, _extensions: Self::AddThreeExtensions) -> u32 {
+        a + b + c
     }
 }
