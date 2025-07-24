@@ -52,8 +52,14 @@ async fn message() {
     launch_axum_server().await;
     launch_actix_server().await;
 
-    assert_eq!(AXUM_CLIENT.message("Hello world!").await.unwrap(), "Hello world!");
-    assert_eq!(ACTIX_CLIENT.message("Hello world!").await.unwrap(), "Hello world!");
+    assert_eq!(
+        AXUM_CLIENT.message("Hello world!").await.unwrap(),
+        "Hello world!"
+    );
+    assert_eq!(
+        ACTIX_CLIENT.message("Hello world!").await.unwrap(),
+        "Hello world!"
+    );
 }
 
 #[tokio::test]
@@ -61,6 +67,12 @@ async fn concat() {
     launch_axum_server().await;
     launch_actix_server().await;
 
-    assert_eq!(AXUM_CLIENT.concat("Hello", " world!").await.unwrap(), "Hello world!");
-    assert_eq!(ACTIX_CLIENT.concat("Hello", " world!").await.unwrap(), "Hello world!");
+    assert_eq!(
+        AXUM_CLIENT.concat("Hello", " world!").await.unwrap(),
+        "Hello world!"
+    );
+    assert_eq!(
+        ACTIX_CLIENT.concat("Hello", " world!").await.unwrap(),
+        "Hello world!"
+    );
 }

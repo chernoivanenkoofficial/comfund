@@ -14,6 +14,7 @@
 //! As both client and server code are generated from the same place,
 //! synchronization of endporint URLs, methods, parameters, etc. is guaranteed.
 //! And only one place in code should be modified manually, if needed.
+#![allow(clippy::non_minimal_cfg)]
 
 pub use comfund_macros::contract;
 

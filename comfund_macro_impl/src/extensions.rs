@@ -102,16 +102,13 @@ pub trait SynTypeExtensions {
 
 impl SynTypeExtensions for syn::Type {
     fn is_ref(&self) -> bool {
-        match self {
-            Self::Reference(_) => true,
-            _ => false
-        }
+        matches!(self, Self::Reference(_))
     }
 
     fn get_ref(&self) -> Option<&syn::TypeReference> {
         match self {
             Self::Reference(ty) => Some(ty),
-            _ => None
+            _ => None,
         }
     }
 }

@@ -1,13 +1,13 @@
 //! # Endpoint parameters
-//! 
+//!
 //! Endpoints can have parameters, that will be serialized by
-//! client implementation or deserialied by server implementation 
-//! before passing to user implemented handlers. The type of these 
-//! parameters can be either [syn::TypePath] of [`syn::TypeReference`], that 
+//! client implementation or deserialied by server implementation
+//! before passing to user implemented handlers. The type of these
+//! parameters can be either [syn::TypePath] of [`syn::TypeReference`], that
 //! were brought into the conract's scope.
-//! 
+//!
 //! As server side needs owned types for deserialization, most of the functions of
-//! [`Param`] have versions for declared type and owned type (if needed), resolved through 
+//! [`Param`] have versions for declared type and owned type (if needed), resolved through
 //! [std::borrow::ToOwned]. For user defined types this works through blank implementation of
 //! [`ToOwned`] for `T: Clone`. Or a custom implementaiton for unsized types can be provided.  
 use core::error;
@@ -73,8 +73,8 @@ impl Param {
         self.ty.is_ref()
     }
 
-    /// Get a type of this param in owned form 
-    /// (with references resolved to [`ToOwned::Owned`] 
+    /// Get a type of this param in owned form
+    /// (with references resolved to [`ToOwned::Owned`]
     /// associated type).
     pub fn as_owned_fn_arg(&self) -> syn::FnArg {
         let id = &self.id;
@@ -84,7 +84,7 @@ impl Param {
         parse_quote!(#(#attrs)* #id: #ty)
     }
 
-    /// Get a type of this param in borrowed form 
+    /// Get a type of this param in borrowed form
     /// (either by value or a reference with no lifetime specified).
     pub fn as_borrowed_fn_arg(&self) -> syn::FnArg {
         let id = &self.id;
@@ -99,7 +99,7 @@ impl Param {
         &self.ty
     }
 
-    /// Get a type of this param in owned context 
+    /// Get a type of this param in owned context
     /// (check [module](crate::contract::param) docs for more info).
     pub fn owned_ty(&self) -> syn::Type {
         match &self.ty {
@@ -111,33 +111,34 @@ impl Param {
                     ty.span()=>
                     <#inner as ::std::borrow::ToOwned>::Owned
                 )
-                
-            },
-            _ => unreachable!()
+            }
+            _ => unreachable!(),
         }
     }
 
     /// Get a type of this param in borrowed context
     /// (typically in the client side code).
-    /// 
+    ///
     /// ## Panics
-    /// 
-    /// If `self` type is [`syn::Type::Path`] and `lifetime` was `Some` 
+    ///
+    /// If `self` type is [`syn::Type::Path`] and `lifetime` was `Some`
     /// or if `self` type is [`syn::Type::Reference`] and lifetime wasn't provided.
     pub fn borrowed_ty(&self, lt: Option<&syn::Lifetime>) -> syn::Type {
         use syn::Type;
-        
+
         match &self.ty {
-            Type::Path(_) => if lt.is_none() {
-                self.ty.clone()
-            } else {
-                panic!("Trying to assign lifetime to a non-borrowed type")
-            },
+            Type::Path(_) => {
+                if lt.is_none() {
+                    self.ty.clone()
+                } else {
+                    panic!("Trying to assign lifetime to a non-borrowed type")
+                }
+            }
             Type::Reference(reference) => {
                 let inner = &*reference.elem;
                 parse_quote!(&#lt #inner)
-            },
-            _ => unreachable!("Unsupported type of parameter.")
+            }
+            _ => unreachable!("Unsupported type of parameter."),
         }
     }
 }

@@ -183,7 +183,7 @@ impl Inputs {
     /// //   world
     /// // } = hello_world_inputs;
     /// ```
-    pub fn destructor(&self, expr: impl quote::ToTokens) -> impl quote::ToTokens {        
+    pub fn destructor(&self, expr: impl quote::ToTokens) -> impl quote::ToTokens {
         if let Some(id) = self.id() {
             quote! {
                 let #id = #expr;
@@ -200,7 +200,7 @@ impl Inputs {
         }
     }
 
-    /// Same as [`destructor`](Self::destructor), but for for owned version of 
+    /// Same as [`destructor`](Self::destructor), but for for owned version of
     /// this [`Inputs`] group.
     pub fn owned_destructor(&self, expr: impl quote::ToTokens) -> impl quote::ToTokens {
         if let Some(id) = self.id() {
@@ -343,7 +343,7 @@ fn gen_borrowed_definition(ty: &syn::Type, params: &[Param]) -> syn::ItemStruct 
         let id = &param.id;
         let lt = if param.ty.is_ref() {
             *lifetime_counter += 1;
-            let lt = syn::parse_str(&format!("'a{}", lifetime_counter)).unwrap();
+            let lt = syn::parse_str(&format!("'a{lifetime_counter}")).unwrap();
             lifetimes.push(lt);
             lifetimes.last()
         } else {
@@ -396,7 +396,7 @@ fn gen_owned_type(ep_name: &syn::Ident, suffix: &str) -> syn::Type {
     parse_quote!(#id)
 }
 
-/// Atrtibute for `#[serde(flatten)]` option of generated struct's fields. 
+/// Atrtibute for `#[serde(flatten)]` option of generated struct's fields.
 fn flatten_attr(param: &Param) -> Option<syn::Attribute> {
     let span = param.id.span();
 

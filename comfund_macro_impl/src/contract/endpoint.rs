@@ -138,7 +138,7 @@ impl<'a> Endpoint {
             body_param.map(Param::as_owned_fn_arg),
         )
     }
-    
+
     /// Get params of this endpoint as a [`syn::FnArg`]s, grouped by (path, query, body),
     /// with declared types, but without references lifetimes.
     pub fn param_args(
@@ -205,7 +205,7 @@ pub struct EndpointOptions {
 
 impl EndpointOptions {
     /// Substitute options with values from `defaults`,
-    /// where those values are not `None` 
+    /// where those values are not `None`
     pub fn merge(mut self, defaults: &Self) -> Self {
         self.content_type = self.content_type.or(defaults.content_type.clone());
 
@@ -253,7 +253,7 @@ fn gen_inputs(
     }
 
     let path_inputs = inputs::from_params(ep_name, path_params, "_path_inputs");
-    
+
     // Query params
 
     let mut query_params = vec![];
