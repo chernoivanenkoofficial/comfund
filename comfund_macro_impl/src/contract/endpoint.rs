@@ -33,6 +33,7 @@ pub struct Endpoint {
 }
 
 impl Endpoint {
+    /// Parse [syn::TraitItemFn] as contract endpoint.
     pub fn parse(
         contract_id: syn::Ident,
         fn_item: syn::TraitItemFn,
@@ -66,10 +67,12 @@ impl Endpoint {
         })
     }
 
+    /// Get group of params, passed thorugh endpoint URL path.
     pub fn path_inputs(&self) -> Option<&Inputs> {
         self.path_inputs.as_ref()
     }
 
+    /// Get group of params, passed thorugh endpoint query params.
     pub fn query_inputs(&self) -> Option<&Inputs> {
         self.query_inputs.as_ref()
     }
@@ -86,6 +89,7 @@ impl Endpoint {
         validate_path(self.meta.path_lit())
     }
 
+    /// Get params of this enpoint, grouped by (path, query, body) transport.
     pub fn params(&self) -> (&[Param], &[Param], Option<&Param>) {
         fn get_params(inputs: &Option<Inputs>) -> &[Param] {
             inputs.as_ref().map_or(&[], |inputs| &inputs.params)
@@ -98,6 +102,7 @@ impl Endpoint {
         )
     }
 
+    /// Get idents of this enpoint's params, grouped by (path, query, body) transport.
     pub fn param_names(
         &self,
     ) -> (
@@ -116,6 +121,26 @@ impl Endpoint {
 }
 
 impl<'a> Endpoint {
+    /// Get params of this endpoint as a [`syn::FnArg`]s, grouped by (path, query, body),
+    /// with references resolved to owned versions.
+    pub fn param_owned_args(
+        &'a self,
+    ) -> (
+        impl Iterator<Item = syn::FnArg> + 'a,
+        impl Iterator<Item = syn::FnArg> + 'a,
+        Option<syn::FnArg>,
+    ) {
+        let (path_params, query_params, body_param) = self.params();
+
+        (
+            path_params.iter().map(Param::as_owned_fn_arg),
+            query_params.iter().map(Param::as_owned_fn_arg),
+            body_param.map(Param::as_owned_fn_arg),
+        )
+    }
+
+    /// Get params of this endpoint as a [`syn::FnArg`]s, grouped by (path, query, body),
+    /// with declared types, but without references lifetimes.
     pub fn param_args(
         &'a self,
     ) -> (
@@ -126,9 +151,9 @@ impl<'a> Endpoint {
         let (path_params, query_params, body_param) = self.params();
 
         (
-            path_params.iter().map(Param::as_fn_arg),
-            query_params.iter().map(Param::as_fn_arg),
-            body_param.map(Param::as_fn_arg),
+            path_params.iter().map(Param::as_borrowed_fn_arg),
+            query_params.iter().map(Param::as_borrowed_fn_arg),
+            body_param.map(Param::as_borrowed_fn_arg),
         )
     }
 }
@@ -179,6 +204,8 @@ pub struct EndpointOptions {
 }
 
 impl EndpointOptions {
+    /// Substitute options with values from `defaults`,
+    /// where those values are not `None`
     pub fn merge(mut self, defaults: &Self) -> Self {
         self.content_type = self.content_type.or(defaults.content_type.clone());
 
@@ -226,6 +253,7 @@ fn gen_inputs(
     }
 
     let path_inputs = inputs::from_params(ep_name, path_params, "_path_inputs");
+
     // Query params
 
     let mut query_params = vec![];

@@ -46,3 +46,33 @@ async fn add_three() {
     AXUM_CLIENT.add_three(0, 1, 2).await.unwrap();
     ACTIX_CLIENT.add_three(0, 1, 1).await.unwrap();
 }
+
+#[tokio::test]
+async fn message() {
+    launch_axum_server().await;
+    launch_actix_server().await;
+
+    assert_eq!(
+        AXUM_CLIENT.message("Hello world!").await.unwrap(),
+        "Hello world!"
+    );
+    assert_eq!(
+        ACTIX_CLIENT.message("Hello world!").await.unwrap(),
+        "Hello world!"
+    );
+}
+
+#[tokio::test]
+async fn concat() {
+    launch_axum_server().await;
+    launch_actix_server().await;
+
+    assert_eq!(
+        AXUM_CLIENT.concat("Hello", " world!").await.unwrap(),
+        "Hello world!"
+    );
+    assert_eq!(
+        ACTIX_CLIENT.concat("Hello", " world!").await.unwrap(),
+        "Hello world!"
+    );
+}

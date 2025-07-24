@@ -26,7 +26,7 @@ pub fn def_input_arg(
     default_name: &str,
     wrapper: &syn::Path,
 ) -> syn::FnArg {
-    let ty = &inputs.ty;
+    let ty = inputs.owned_ty();
     let id = inputs.id_or(syn::Ident::new(default_name, span));
 
     parse_quote!(#id: #wrapper::<#ty>)
@@ -56,7 +56,7 @@ pub fn def_input_arg(
 pub fn handler_sig_args(ep: &Endpoint, names: &Names) -> Punctuated<syn::FnArg, Token![,]> {
     let ext_type_id = names.ext_type_id();
 
-    let (path_params, query_params, body_param) = ep.param_args();
+    let (path_params, query_params, body_param) = ep.param_owned_args();
 
     let mut fn_args = Punctuated::new();
 
@@ -116,18 +116,18 @@ pub fn handler_call_args(ep: &Endpoint) -> Punctuated<syn::Ident, Token![,]> {
 /// ## Returns
 ///
 /// Returns statement, if `inputs` were not `None` and not [flat](`Inputs::is_flat`).
-/// Otherwise, returns `None`.
+/// Otherwise, returns reassignment statement.
 pub fn destructor(
     inputs: Option<&Inputs>,
     default_name: &str,
     extract: impl FnOnce(syn::Expr) -> syn::Expr,
 ) -> Option<impl quote::ToTokens> {
-    inputs.and_then(|inputs| {
+    inputs.map(|inputs| {
         let ident = inputs.id().cloned().unwrap_or(syn::Ident::new(
             default_name,
             proc_macro2::Span::call_site(),
         ));
 
-        inputs.destructor(extract(parse_quote!(#ident)))
+        inputs.owned_destructor(extract(parse_quote!(#ident)))
     })
 }
