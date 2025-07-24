@@ -160,7 +160,7 @@ mod static_impl {
 fn sig(ep: &Endpoint, with_reciever: bool) -> syn::Signature {
     use syn::punctuated::Punctuated;
 
-    let (path_params, query_params, body_param) = ep.param_borrowed_args();
+    let (path_params, query_params, body_param) = ep.param_args();
     let id = &ep.id;
 
     let ret_ty = &ep.ret;

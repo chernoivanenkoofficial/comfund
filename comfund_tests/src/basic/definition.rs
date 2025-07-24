@@ -15,4 +15,7 @@ pub trait Service {
 
     #[endpoint(get, "/message", content_type = "text/plain")]
     fn message(#[param(query)] message: &str) -> String;
+
+    #[endpoint(get, "/concat", content_type = "text/plain")]
+    fn concat(#[param(query)] s1: &str, #[param(query)] s2: &str) -> String;
 }

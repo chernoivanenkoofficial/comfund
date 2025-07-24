@@ -219,7 +219,9 @@ impl Inputs {
         }
     }
 
-    pub fn as_handler_arg(
+    /// Parse this group as a [`syn::FnArg`] for server-side
+    /// wrapper function.
+    pub fn as_wrapper_arg(
         &self,
         wrapper: &syn::Path,
         default_id: impl FnOnce() -> syn::Ident,
@@ -365,7 +367,7 @@ fn gen_borrowed_definition(ty: &syn::Type, params: &[Param]) -> syn::ItemStruct 
 
     parse_quote! {
         #(#struct_attrs)*
-        pub struct #ty<#(#lifetimes)*> {
+        pub struct #ty<#(#lifetimes),*> {
             #(#fields),*
         }
     }
@@ -394,6 +396,7 @@ fn gen_owned_type(ep_name: &syn::Ident, suffix: &str) -> syn::Type {
     parse_quote!(#id)
 }
 
+/// Atrtibute for `#[serde(flatten)]` option of generated struct's fields. 
 fn flatten_attr(param: &Param) -> Option<syn::Attribute> {
     let span = param.id.span();
 

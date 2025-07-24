@@ -29,4 +29,14 @@ impl definition::actix_web::Service for ServiceImpl {
     ) -> String {
         message
     }
+
+    type ConcatExtensions = ();
+    async fn concat(
+        mut s1: <str as ::std::borrow::ToOwned>::Owned,
+        s2: <str as ::std::borrow::ToOwned>::Owned,
+        _extensions: Self::ConcatExtensions,
+    ) -> String {
+        s1.push_str(&s2);
+        s1
+    }
 }

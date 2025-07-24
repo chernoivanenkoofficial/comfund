@@ -111,14 +111,14 @@ where
         let mut args = syn::punctuated::Punctuated::new();
 
         ep.path_inputs().inspect(|&inputs| {
-            let arg = inputs.as_handler_arg(&self.path_extractor, || {
+            let arg = inputs.as_wrapper_arg(&self.path_extractor, || {
                 syn::Ident::new(Inputs::DEFAULT_PATH_NAME, ep.id.span())
             });
             args.push(arg);
         });
 
         ep.query_inputs().inspect(|&inputs| {
-            let arg = inputs.as_handler_arg(&self.query_extractor, || {
+            let arg = inputs.as_wrapper_arg(&self.query_extractor, || {
                 syn::Ident::new(Inputs::DEFAULT_QUERY_NAME, ep.id.span())
             });
             args.push(arg);

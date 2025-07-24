@@ -1,3 +1,15 @@
+//! # Endpoint parameters
+//! 
+//! Endpoints can have parameters, that will be serialized by
+//! client implementation or deserialied by server implementation 
+//! before passing to user implemented handlers. The type of these 
+//! parameters can be either [syn::TypePath] of [`syn::TypeReference`], that 
+//! were brought into the conract's scope.
+//! 
+//! As server side needs owned types for deserialization, most of the functions of
+//! [`Param`] have versions for declared type and owned type (if needed), resolved through 
+//! [std::borrow::ToOwned]. For user defined types this works through blank implementation of
+//! [`ToOwned`] for `T: Clone`. Or a custom implementaiton for unsized types can be provided.  
 use core::error;
 use std::borrow::Borrow;
 
@@ -7,12 +19,12 @@ use crate::extensions::*;
 use quote::quote;
 use syn::{parse_quote, parse_quote_spanned, spanned::Spanned};
 
-/// Parsed endpoint arg
+/// Parsed endpoint parameter.
 #[derive(Debug, Clone, Eq)]
 pub struct Param {
-    /// Type of expected arg
+    /// Type of expected parameter.
     pub ty: syn::Type,
-    /// Name of expected arg
+    /// Name of expected parameter.
     pub id: syn::Ident,
     pub meta: ParamMeta,
     pub attributes: Vec<syn::Attribute>,
@@ -82,12 +94,13 @@ impl Param {
         parse_quote!(#(#attrs)* #id: #ty)
     }
 
+    /// Get declared type of this param.
     pub fn ty(&self) -> &syn::Type {
         &self.ty
     }
 
-    /// Get a type of this param in owned context
-    /// (typically in the server side code).
+    /// Get a type of this param in owned context 
+    /// (check [module](crate::contract::param) docs for more info).
     pub fn owned_ty(&self) -> syn::Type {
         match &self.ty {
             syn::Type::Path(_) => self.ty.clone(),
@@ -98,6 +111,7 @@ impl Param {
                     ty.span()=>
                     <#inner as ::std::borrow::ToOwned>::Owned
                 )
+                
             },
             _ => unreachable!()
         }
