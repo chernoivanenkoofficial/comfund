@@ -6,7 +6,7 @@ pub mod param;
 pub mod query;
 pub mod transport;
 
-use quote::quote;
+use quote::{quote, ToTokens};
 
 use endpoint::Endpoint;
 
@@ -17,15 +17,13 @@ pub fn implement(contract: &Contract) -> proc_macro2::TokenStream {
 
     for ep in &contract.endpoints {
         if let Some(input) = &ep.path_inputs {
-            if let Some(def) = &input.definition {
-                stream.extend(def.clone());
-            }
+            stream.extend(input.definition().map(ToTokens::to_token_stream));
+            stream.extend(input.owned_definition().map(ToTokens::to_token_stream));
         }
 
         if let Some(input) = &ep.query_inputs {
-            if let Some(def) = &input.definition {
-                stream.extend(def.clone());
-            }
+            stream.extend(input.definition().map(ToTokens::to_token_stream));
+            stream.extend(input.owned_definition().map(ToTokens::to_token_stream));
         }
     }
 

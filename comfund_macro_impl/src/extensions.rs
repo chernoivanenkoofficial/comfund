@@ -94,3 +94,24 @@ impl<T, I: Iterator<Item = syn::Result<T>>> CollectSynResults<T> for I {
         }
     }
 }
+
+pub trait SynTypeExtensions {
+    fn is_ref(&self) -> bool;
+    fn get_ref(&self) -> Option<&syn::TypeReference>;
+}
+
+impl SynTypeExtensions for syn::Type {
+    fn is_ref(&self) -> bool {
+        match self {
+            Self::Reference(_) => true,
+            _ => false
+        }
+    }
+
+    fn get_ref(&self) -> Option<&syn::TypeReference> {
+        match self {
+            Self::Reference(ty) => Some(ty),
+            _ => None
+        }
+    }
+}

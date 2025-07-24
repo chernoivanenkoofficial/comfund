@@ -116,7 +116,7 @@ impl Endpoint {
 }
 
 impl<'a> Endpoint {
-    pub fn param_args(
+    pub fn param_owned_args(
         &'a self,
     ) -> (
         impl Iterator<Item = syn::FnArg> + 'a,
@@ -126,9 +126,25 @@ impl<'a> Endpoint {
         let (path_params, query_params, body_param) = self.params();
 
         (
-            path_params.iter().map(Param::as_fn_arg),
-            query_params.iter().map(Param::as_fn_arg),
-            body_param.map(Param::as_fn_arg),
+            path_params.iter().map(Param::as_owned_fn_arg),
+            query_params.iter().map(Param::as_owned_fn_arg),
+            body_param.map(Param::as_owned_fn_arg),
+        )
+    }
+    
+    pub fn param_borrowed_args(
+        &'a self,
+    ) -> (
+        impl Iterator<Item = syn::FnArg> + 'a,
+        impl Iterator<Item = syn::FnArg> + 'a,
+        Option<syn::FnArg>,
+    ) {
+        let (path_params, query_params, body_param) = self.params();
+
+        (
+            path_params.iter().map(Param::as_borrowed_fn_arg),
+            query_params.iter().map(Param::as_borrowed_fn_arg),
+            body_param.map(Param::as_borrowed_fn_arg),
         )
     }
 }

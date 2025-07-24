@@ -5,7 +5,7 @@ use crate::contract::transport::Transport;
 use crate::extensions::*;
 
 use quote::quote;
-use syn::parse_quote;
+use syn::{parse_quote, parse_quote_spanned, spanned::Spanned};
 
 /// Parsed endpoint arg
 #[derive(Debug, Clone, Eq)]
@@ -57,12 +57,74 @@ impl Param {
         inputs.into_iter().map(Self::parse).collect_syn_results()
     }
 
-    pub fn as_fn_arg(&self) -> syn::FnArg {
+    pub fn is_ref(&self) -> bool {
+        self.ty.is_ref()
+    }
+
+    /// Get a type of this param in owned form 
+    /// (with references resolved to [`ToOwned::Owned`] 
+    /// associated type).
+    pub fn as_owned_fn_arg(&self) -> syn::FnArg {
         let id = &self.id;
-        let ty = &self.ty;
+        let ty = self.owned_ty();
         let attrs = self.attributes.iter();
 
         parse_quote!(#(#attrs)* #id: #ty)
+    }
+
+    /// Get a type of this param in borrowed form 
+    /// (either by value or a reference with no lifetime specified).
+    pub fn as_borrowed_fn_arg(&self) -> syn::FnArg {
+        let id = &self.id;
+        let ty = self.borrowed_ty(None);
+        let attrs = self.attributes.iter();
+
+        parse_quote!(#(#attrs)* #id: #ty)
+    }
+
+    pub fn ty(&self) -> &syn::Type {
+        &self.ty
+    }
+
+    /// Get a type of this param in owned context
+    /// (typically in the server side code).
+    pub fn owned_ty(&self) -> syn::Type {
+        match &self.ty {
+            syn::Type::Path(_) => self.ty.clone(),
+            syn::Type::Reference(ty) => {
+                let inner = &*ty.elem;
+
+                parse_quote_spanned!(
+                    ty.span()=>
+                    <#inner as ::std::borrow::ToOwned>::Owned
+                )
+            },
+            _ => unreachable!()
+        }
+    }
+
+    /// Get a type of this param in borrowed context
+    /// (typically in the client side code).
+    /// 
+    /// ## Panics
+    /// 
+    /// If `self` type is [`syn::Type::Path`] and `lifetime` was `Some` 
+    /// or if `self` type is [`syn::Type::Reference`] and lifetime wasn't provided.
+    pub fn borrowed_ty(&self, lt: Option<&syn::Lifetime>) -> syn::Type {
+        use syn::Type;
+        
+        match &self.ty {
+            Type::Path(_) => if lt.is_none() {
+                self.ty.clone()
+            } else {
+                panic!("Trying to assign lifetime to a non-borrowed type")
+            },
+            Type::Reference(reference) => {
+                let inner = &*reference.elem;
+                parse_quote!(&#lt #inner)
+            },
+            _ => unreachable!("Unsupported type of parameter.")
+        }
     }
 }
 
@@ -87,6 +149,12 @@ impl ParamMeta {
 #[deluxe(default)]
 pub struct ParamOptions {
     pub flatten: deluxe::Flag,
+}
+
+impl ParamOptions {
+    pub fn flatten(&self) -> bool {
+        self.flatten.is_set()
+    }
 }
 
 fn validate_type(ty: impl Borrow<syn::Type>) -> Result<(), syn::Error> {
